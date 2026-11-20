@@ -1,0 +1,1676 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="你是被骗进山里的新娘。第六天夜里，一个小孩敲响了你的窗户。">
+<meta name="theme-color" content="#0b0a09">
+<title>无面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap">
+<style>
+/* 版式：整屏铺一张褪色的老照片当背景，上面压一页深色的纸，纸上是这一节的字和选项。
+   只做一种暗色：这是一个夜里的故事，不跟着系统切亮色。 */
+:root {
+  --paper: rgba(14, 12, 10, 0.86);
+  --ink: #e9e2d4;
+  --muted: #a39a8a;
+  --rule: rgba(233, 226, 212, 0.16);
+  --red: #b8392b;
+  --brass: #c9a25a;
+  --font-title: "Ma Shan Zheng", "STKaiti", "KaiTi", serif;
+  --font-body: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: #0b0a09; }
+body { margin: 0; background: #0b0a09; color: var(--ink); font-family: var(--font-body); font-size: 17.5px; line-height: 1.95; }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+#bg { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; transition: opacity .5s ease; }
+#bg.fade { opacity: 0; transition: none; }
+.app {
+  position: relative; z-index: 1; max-width: 640px; margin: 0 auto; box-sizing: border-box;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px; min-height: 100vh;
+}
+
+/* 顶部状态条 */
+.hud {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; margin: 0 -16px; padding: 10px 16px;
+  background: linear-gradient(rgba(8,7,6,0.92), rgba(8,7,6,0.78)); border-bottom: 1px solid var(--rule);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 14px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: #080706; z-index: 10; }
+.clock { font-family: var(--font-mono); font-size: 20px; letter-spacing: .04em; }
+.clock small { font-size: 12.5px; color: var(--muted); margin-left: 6px; letter-spacing: 0; font-family: var(--font-body); }
+.clock.late { color: var(--red); }
+.noise { display: flex; align-items: center; gap: 4px; color: var(--muted); }
+.noise i { width: 10px; height: 12px; border-radius: 5px 5px 2px 2px; background: rgba(201,162,90,0.18); display: inline-block; }
+.noise i.on { background: var(--brass); box-shadow: 0 0 8px rgba(201,162,90,0.8); }
+.noise.hot i.on { background: #e0603f; box-shadow: 0 0 10px rgba(224,96,63,0.9); }
+.tools { margin-left: auto; display: flex; gap: 6px; }
+.tool { background: rgba(255,255,255,0.04); border: 1px solid var(--rule); border-radius: 6px; padding: 3px 10px; font-size: 13.5px; color: var(--muted); }
+.tool:hover { color: var(--ink); border-color: rgba(233,226,212,0.35); }
+.tool:disabled { opacity: .35; cursor: default; }
+
+/* 照片区 */
+.photo { height: 36vh; min-height: 200px; display: flex; align-items: flex-end; padding-bottom: 12px; }
+.cap { font-family: var(--font-mono); font-size: 12.5px; color: rgba(233,226,212,0.75); letter-spacing: .12em; text-shadow: 0 1px 3px #000; }
+.cap b { font-family: var(--font-title); font-weight: 400; font-size: 26px; letter-spacing: .1em; margin-left: 8px; color: var(--ink); }
+
+/* 纸 */
+.page {
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 20px 18px 22px;
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); box-shadow: 0 20px 60px -20px #000;
+}
+.with { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; font-size: 13.5px; color: var(--muted); align-items: center; }
+.with span { border: 1px solid var(--rule); border-radius: 999px; padding: 1px 10px; }
+.with .wrist { border-color: rgba(184,57,43,0.6); color: #e1a598; }
+.note { margin: 0 0 18px; padding: 2px 0 2px 14px; border-left: 2px solid var(--red); color: #cfc5b3; }
+.note p, .txt p { margin: 0 0 14px; }
+.note p:last-child, .txt p:last-child { margin-bottom: 0; }
+.choices { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+.choice {
+  display: grid; grid-template-columns: 1.6em 1fr; gap: 6px; text-align: left; line-height: 1.6;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--rule); border-radius: 4px; padding: 12px 14px;
+}
+.choice:hover { border-color: rgba(201,162,90,0.7); background: rgba(201,162,90,0.06); }
+.choice .k { font-family: var(--font-mono); color: var(--brass); }
+
+/* 开始页和结局 */
+.start { min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; gap: 16px; padding-bottom: 40px; box-sizing: border-box; }
+.start h1, .end-title { font-family: var(--font-title); font-weight: 400; margin: 0; line-height: 1; letter-spacing: .12em; text-shadow: 0 2px 18px #000; }
+.start h1 { font-size: clamp(84px, 26vw, 150px); }
+.start .sub { margin: 0; color: #d6cdbd; text-shadow: 0 1px 6px #000; }
+.warn { margin: 0; font-size: 13.5px; color: var(--muted); }
+.btns { display: flex; flex-wrap: wrap; gap: 10px; }
+.primary { background: var(--red); border: 0; border-radius: 4px; padding: 12px 26px; font-size: 17px; letter-spacing: .1em; }
+.primary:hover { filter: brightness(1.12); }
+.ghost { background: rgba(0,0,0,0.35); border: 1px solid var(--rule); border-radius: 4px; padding: 11px 20px; }
+.album h3 { margin: 0 0 8px; font-size: 13.5px; color: var(--muted); font-weight: 400; letter-spacing: .1em; }
+.slots { display: flex; flex-wrap: wrap; gap: 6px; }
+.slot { border: 1px dashed var(--rule); border-radius: 3px; padding: 3px 10px; font-size: 14px; color: var(--muted); background: rgba(0,0,0,0.35); }
+.slot.got { border-style: solid; border-color: rgba(201,162,90,0.6); color: var(--ink); }
+.end-num { margin: 0 0 6px; font-family: var(--font-mono); font-size: 13px; color: var(--brass); letter-spacing: .14em; }
+.end-title { font-size: 56px; margin-bottom: 18px; }
+.end-foot { margin-top: 22px; display: flex; flex-direction: column; gap: 16px; }
+.real { font-size: 13px; color: var(--muted); margin: 0; }
+
+/* 线索本 */
+.drawer {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; max-height: 70vh; overflow-y: auto;
+  background: #11100e; border-top: 1px solid var(--rule); box-shadow: 0 -20px 50px #000;
+  padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.drawer-in { max-width: 640px; margin: 0 auto; }
+.drawer h2 { margin: 0 0 4px; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
+.drawer .hint { margin: 0 0 14px; font-size: 13.5px; color: var(--muted); }
+.drawer ol { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 10px; font-size: 15.5px; line-height: 1.7; }
+
+@media (prefers-reduced-motion: reduce) { #bg { transition: none; } }
+</style>
+</head>
+<body>
+<canvas id="bg" role="img" aria-label="这一节的场景照片"></canvas>
+<div class="app" id="app">
+  <section class="start" id="start" hidden>
+    <h1>无面</h1>
+    <p class="sub">你是被骗进山里的新娘。第六天夜里，一个小孩敲响了你的窗户。<br>天亮前走到石门镇，头班车六点十分。</p>
+    <p class="warn">含拐卖、邪神崇拜和惊吓情节。故事、人物和地名均为虚构。</p>
+    <div class="btns">
+      <button class="primary" type="button" data-new>开始</button>
+      <button class="ghost" type="button" data-resume hidden>接着上次</button>
+    </div>
+    <div class="album" id="album"></div>
+  </section>
+
+  <section id="game" hidden>
+    <header class="hud" id="hud"></header>
+    <div class="photo"><div class="cap" id="cap"></div></div>
+    <article class="page" id="page" aria-live="polite"></article>
+  </section>
+</div>
+<div class="drawer" id="drawer" hidden></div>
+<script>
+/*CORE-START*/
+const Story = (() => {
+  'use strict';
+
+  // ---- 暗规矩（不显示给玩家）----
+  // 1. 新娘左手的红绳是祠堂里系的。系着它的人走近铜铃，铃就响；村里人和开过脸的女人不会让铃响。
+  // 2. 红绳碰了铁，全村的铃一起响。用祠堂长明灯的火烧，它整根掉下来，铃从此不认得你。
+  // 3. 开过脸的女人，脸印在白布上，挂在“奶奶”身后的墙上。烧掉那块布，她就想起自己是谁。
+  // 4. 开过脸的女人听见铃声会走过去，把人带回祠堂。
+  // 5. 阿芸是村长的女儿，扮成被关的新娘。她的红绳是自己系的，铃不会为她响。
+  // 6. 头班车 06:10 从石门镇开。村里的动静到了 2，村里人会骑摩托先去车站堵人。
+
+  const BUS = 370; // 06:10，从零点算的分钟数
+  const CLUES = {
+    r1: '冯婆说：红绳碰不得铁，碰了，全村都知道。',
+    r2: '冯婆进进出出，门口的铃从来不响。只有你一过，它就“叮”一声。',
+    r3: '头班车早上六点十分，从石门镇开。',
+    r4: '豆子说：红绳得用奶奶灯里的火烧，一烧就掉，铃就不认得你了。',
+    r5: '豆子说：开过脸的人，脸都挂在祠堂里，奶奶背后那面墙上。',
+    r6: '豆子说：出村往后山，坟地后头的豁口叫鸦口，过了鸦口是鹰嘴崖栈道，绳子都是老麻绳。',
+    r7: '春妮掀开地窖盖子，看了豆子一眼，唱了半句歌，又把盖子合上了。开过脸的人，心里好像还剩一点。',
+    c1: '你推开柴房门，门上的铃响了。阿芸跟着跨出门槛，铃一动不动。',
+    c2: '阿芸叫豆子“豆豆”。豆子说，这个小名只有他娘这么叫过。',
+    c3: '阿芸说她是省城读会计的大学生。她手掌上全是老茧，指甲缝里是黑泥，左手拇指上有一道镰刀疤。',
+    c4: '还没人告诉过阿芸那个豁口叫什么，她自己先说了一句：“到鸦口了。”',
+    c5: '在祠堂里，阿芸不肯把手腕凑到灯上，说怕疼。',
+    c6: '秦姐说：新娘抬进村，她两年里个个都见过，没见过阿芸。',
+    c7: '在守林屋门口，阿芸一脚踢翻了狗盆。',
+    c8: '阿芸的红绳凑到灯上，烧起来跟普通棉线一样，一股焦味，烫得她直叫。你的绳子烧的时候是凉的。',
+    c9: '阿芸一个人从坟堆中间走过去，坟头的铃一个都没响。',
+  };
+
+  const N = {};
+  const node = (id, def) => { N[id] = { id, ...def }; };
+  const P = (...xs) => xs.filter(Boolean).join('\n\n');
+  const clue = (s, k) => { if (!s.clues.includes(k)) s.clues.push(k); };
+  const w = (s, k) => Boolean(s.w[k]);
+  const hhmm = (t) => `${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+  const ring = (s, n = 1) => { s.alarm = Math.min(3, s.alarm + n); s.rang += 1; };
+  // 身上还系着真红绳的人：你（没烧没剪时）和秦姐
+  const ringers = (s) => (s.string === 'on' ? 1 : 0) + (w(s, 'qin') ? 1 : 0);
+
+  // ---- No.01 ----
+  node('01', {
+    title: '窗外', bg: 'room',
+    enter: (s) => { clue(s, 'r1'); clue(s, 'r2'); clue(s, 'r3'); },
+    text: () => P(
+      '你醒过来的时候，屋顶上有一只蜘蛛，在同一个地方结了六天的网。',
+      '六天前，你还在县城的汽车站。介绍工作的女人说，山里新开了一家民宿，缺个前台，包吃住，一个月六千。她给你买了瓶水。你喝了半瓶，后面的事就记不清了。',
+      '再睁眼，你就在这间屋里了。土墙，木窗，窗上钉着六根铁条。买你的人叫冯有贵，四十多岁，不怎么说话，看你的眼神像看一头刚牵回来的牛。',
+      '第一天，他娘冯婆在你左手腕上系了一根红绳，系得很紧，勒进了肉里。她一边系一边念叨：“拴住了就是冯家的人。铁碰不得，碰了，全村都知道。”',
+      '这个村叫石瓮村。家家门口挂着一只铜铃，路口挂，井边挂，连茅房门上都挂。冯婆进进出出，门口的铃从来不响。只有你一过，它就“叮”的一声。',
+      '村子最里头有座祠堂，供着一尊木像：穿红袄的老太太，双手搭在膝盖上，脸上什么都没有。不是没刻，是被削平了，平得像一块磨过的木板。村里人都叫她“奶奶”。',
+      '隔壁每天下午有个女人坐在门口剥豆子，三十来岁，很瘦，一直在笑，嘴里哼着一支你听不懂的调子。冯婆说，那是春妮，“开过脸了，乖得很”。',
+      '“你明天晚上也开。”冯婆把饭碗放下，难得笑了一下，“开了脸，就不想家了。”',
+      '今天是第六天晚上。',
+      '半夜，窗户被轻轻敲了三下。窗外蹲着一个小男孩，八九岁，瘦得像根竹竿，脸上全是泥。是春妮的儿子，大家都叫他豆子。他从铁条缝里塞进来一把生锈的钥匙。',
+      '“姐姐，我带你走。”他的声音抖得厉害，“天亮前要走到石门镇，头一班车六点十分。铃铛一响，全村都醒。”',
+      '他回头看了一眼，又小声加了一句：“柴房里还关着一个姐姐，哭了三天了。”',
+    ),
+    choices: [
+      { label: '用钥匙开门，马上跟豆子走', go: (s) => { s.t += 5; return '03'; } },
+      { label: '先问豆子：你为什么要帮我？', go: (s) => { s.t += 5; return '02'; } },
+      { label: '摸到灶台拿把剪刀，先把红绳剪了', go: (s) => { s.t += 5; return '04'; } },
+      { label: '让豆子先带你去柴房，把那个姐姐一起救出来', go: (s) => { s.t += 15; return '06'; } },
+    ],
+  });
+
+  // ---- No.02 ----
+  node('02', {
+    title: '豆子的娘', bg: 'room',
+    enter: (s) => { clue(s, 'r4'); clue(s, 'r5'); clue(s, 'r6'); },
+    text: () => P(
+      '豆子低着头，抠着窗台上的泥。',
+      '“我娘以前会唱歌。”他说，“篱笆开花一朵朵，阿妈在河那边坐……她说那是她老家的歌。她天天唱，唱完就哭。”',
+      '“我五岁那年，她开了脸。开完就不唱了，也不哭了，天天笑。她喊我‘小孩’，跟喊别人家的小孩一样。”',
+      '“她的脸挂在祠堂里。奶奶背后那面墙，一块一块的白布，都是脸。”',
+      '他抬起头，眼睛亮得吓人：“红绳不能拿剪子剪，一剪，全村的铃都响。奶奶灯里的火能烧，一烧就掉，铃就不认得你了。我偷看过。”',
+      '“出村往后山走，坟地后头有个豁口叫鸦口。过了鸦口是鹰嘴崖，崖上有条栈道，绳子都是老麻绳。下去就是石门镇。我送你到镇上。”',
+    ),
+    choices: [
+      { label: '开门，先去祠堂把红绳烧了', go: (s) => { s.t += 20; return '08'; } },
+      { label: '开门，直接往村外走', go: (s) => { s.t += 5; return '03'; } },
+      { label: '先去柴房，把那个姐姐救出来', go: (s) => { s.t += 15; return '06'; } },
+    ],
+  });
+
+  // ---- No.03 ----
+  node('03', {
+    title: '出门', bg: 'village',
+    text: (s) => P(
+      '门轴“吱”了一声。你屏住呼吸，等了很久，冯家没有动静。',
+      '村道是黄泥的，白天被太阳晒裂，夜里又被露水泡软。每户门口那只铜铃在月光底下发着暗光，像一排睁着的眼睛。远处祠堂的灯一动不动。',
+      s.string === 'on'
+        ? '豆子拉着你贴在墙根：“大路近，可家家门口都挂着铃。屋后的水沟绕得远，铃少，就是得蹚泥。村口有村长守着，别往那儿去。”'
+        : '你手腕上的红绳已经没了。豆子说：“现在铃不认得你了。大路近，屋后的水沟绕。村口有村长守着，别往那儿去。”',
+      w(s, 'ayun') ? '阿芸紧紧攥着你的衣角，一直在发抖。' : '',
+    ),
+    choices: [
+      { label: '跟豆子走屋后的水沟', go: (s) => { s.t += 40; return '13'; } },
+      { label: '走大路，抄近道上后山', go: (s) => { s.t += 15; if (s.string === 'on') { ring(s, 2); return '12'; } return '15'; } },
+      { label: '先去祠堂', when: (s) => !s.seen.includes('08') && s.alarm < 3, go: (s) => { s.t += 20; return '08'; } },
+      { label: '先去柴房救人', when: (s) => !s.seen.includes('06'), go: (s) => { s.t += 15; return '06'; } },
+    ],
+  });
+
+  // ---- No.04 ----
+  node('04', {
+    title: '剪刀', bg: 'alarm',
+    enter: (s) => { s.string = 'cut'; s.alarm = 3; s.rang += 1; },
+    text: () => P(
+      '你在黑暗里摸到灶台，摸到一把冰凉的剪刀。',
+      '剪刀刃碰到红绳的那一下，你听见了一声“叮”。',
+      '不是一只铃。是全村的铃，一起。',
+      '那声音像一面墙一样压过来。门口的、井边的、路口的、茅房的，几百只铃同时在响，响得你牙根发酸。红绳断了，断口烫得像烙铁，在你手腕上留下一圈红印。',
+      '一家接一家的窗户亮了。门开了。从每一扇门里，走出来一个女人。光着脚，头发披着，嘴里哼着同一支调子，脸上都带着一样的笑。她们一齐转过头，朝冯家的方向走过来。',
+      '冯婆在屋里尖叫：“跑了——！”',
+      '豆子一把拽住你的手：“这边！”',
+    ),
+    choices: [
+      { label: '跟豆子钻进后院的红薯窖', go: (s) => { s.t += 45; return '05'; } },
+      { label: '往后山坟地跑', go: (s) => { s.t += 25; return '15'; } },
+      { label: '冲去柴房，把那个姐姐也带上', go: (s) => { s.t += 10; return '06'; } },
+    ],
+  });
+
+  // ---- No.05 ----
+  node('05', {
+    title: '红薯窖', bg: 'cellar',
+    enter: (s) => { clue(s, 'r7'); },
+    text: () => P(
+      '窖里一股红薯和湿土的味道。豆子把木盖子拉上，四周一下子黑透了。',
+      '头顶上有脚步声。很多双脚，光着，啪嗒，啪嗒，从泥地上走过去。那支调子就在你头顶上，一遍又一遍，没有词。',
+      '脚步声停了。',
+      '木盖子被掀开一条缝。月光漏进来一线，照在一张脸上。是春妮。她蹲在窖口，脸上还是那种笑。她的眼睛在黑暗里找了一会儿，停在豆子脸上。',
+      '豆子一动不动，眼泪顺着脸往下淌。',
+      '春妮看了他很久，嘴唇动了动，很轻很轻地唱了半句：“篱笆开花一朵朵……”',
+      '然后她把盖子合上了，哼着调子，把那串脚步声引向了村东头。',
+      '你们在窖里一直等到外面没了声音。村口那边还有男人的说话声和手电光，祠堂那边全是人。',
+    ),
+    choices: [
+      { label: '从后山坟地走', go: (s) => { s.t += 25; return '15'; } },
+      { label: '先去柴房', when: (s) => !s.seen.includes('06'), go: (s) => { s.t += 15; return '06'; } },
+    ],
+  });
+
+  // ---- No.06 ----
+  node('06', {
+    title: '柴房', bg: 'shed',
+    enter: (s) => {
+      clue(s, 'c2');
+      if (s.string === 'on') { clue(s, 'c1'); ring(s, 1); }
+    },
+    text: (s) => P(
+      '柴房在村长家后头，门从外面用一根木杠横着闩住，门楣上挂着一只铃。',
+      s.string === 'on'
+        ? '你抬起木杠，一推门。头顶的铃“叮”地响了一声。你僵在原地，等了几秒，村长家没有亮灯。'
+        : '你抬起木杠，一推门。头顶的铃没有响，你手上的红绳已经没了。',
+      '柴草堆里蜷着一个姑娘，二十岁上下，头发乱糟糟的，左手腕上也系着一根红绳。她扑过来抓住你的袖子：“带我走，求你了，求求你……”',
+      '她说她叫阿芸，在省城读书，网上认识了个男朋友，跟着他来“见家长”，一进山就被锁进了柴房，关了三天。',
+      s.string === 'on'
+        ? '她跟着你跨出门槛。头顶的铃一动不动。'
+        : '她跟着你跨出门槛，铃也没有响。',
+      '她看见了豆子，眼睛一亮：“豆豆，你也来了？”',
+      '豆子愣了一下：“……你怎么知道我小名？”',
+      '“听他们这么喊你的呀。”阿芸抹了把眼泪，又压低声音对你说，“村东头那个秦小雁，你们千万别信。她早就开过脸了，专门给村里报信。”',
+    ),
+    choices: [
+      { label: '带上她，马上走', go: (s) => { s.w.ayun = true; s.t += 5; return s.alarm >= 3 ? '15' : '03'; } },
+      { label: '先问她几句话', go: (s) => { s.t += 10; return '07'; } },
+      { label: '先不带她：“你在这儿等着，我们出去就报警，带警察回来救你。”', go: (s) => { s.exposed = true; ring(s, 3); return '17'; } },
+    ],
+  });
+
+  // ---- No.07 ----
+  node('07', {
+    title: '问话', bg: 'shed',
+    enter: (s) => { clue(s, 'c3'); },
+    text: () => P(
+      '“你家在哪？”',
+      '“省城，东湖那边。”',
+      '“学什么的？”',
+      '“会计，大三。”她答得很快，一个磕巴都没打。',
+      '她抬手抹眼泪的时候，你看见了她的手掌：厚厚一层老茧，指甲缝里嵌着黑泥，左手拇指上有一道旧疤，是镰刀划的那种。',
+      '“我……我放假帮家里干活。”她把手缩回了袖子里。',
+      '豆子在旁边小声说：“冯婆不叫我豆豆。她叫我‘春妮家那个’。”',
+    ),
+    choices: [
+      { label: '带上她走', go: (s) => { s.w.ayun = true; s.t += 5; return s.alarm >= 3 ? '15' : '03'; } },
+      { label: '把她留在柴房，闩上门', go: (s) => { s.exposed = true; ring(s, 3); return '17'; } },
+    ],
+  });
+
+  // ---- No.08 祠堂：可以在这里做几件事，每件都花时间 ----
+  const IDOL = [
+    '奶奶坐在灯后面，双手搭在膝盖上。',
+    '你又看了一眼奶奶。她的手——你记得刚才是搭在膝盖上的。现在左手抬了起来，搭在扶手上。',
+    '奶奶的头好像偏了一点，那张平平的脸，正对着你站的地方。',
+    '奶奶的两只手都离开了膝盖，掌心朝上，像在等人把什么东西放上去。',
+  ];
+  node('08', {
+    title: '祠堂', bg: 'shrine',
+    enter: (s) => { s.f.shrine = (s.f.shrine || 0) + 1; if (w(s, 'ayun')) clue(s, 'c5'); },
+    text: (s) => P(
+      s.f.shrine === 1 && P(
+        '祠堂的门虚掩着。里面一股灯油和香灰的味道。',
+        '奶奶坐在正中间，穿着褪了色的红袄。那张削平的脸被摸得发亮，像是很多只手在上面摸过很多年。',
+        '她面前是一盏铜灯，灯芯有拇指粗。门外有风，灯火一动不动。',
+        '她身后那面墙上，挂满了白布，一块块只有巴掌大，排得整整齐齐。每块布上都印着一张脸：眉毛、眼睛、鼻子、嘴，淡淡的，像是把一张湿脸按在了布上。有几十张。最老的那些已经黄了。',
+        '门边的长凳上睡着一个老头，手里攥着一只铃。豆子贴着你耳朵说：“刘公，守祠堂的。眼睛瞎的，耳朵灵得很。”',
+        w(s, 'ayun') ? '阿芸停在门槛外面，死活不肯进来：“我不进去……我怕奶奶。”' : '',
+      ),
+      s.f.shrine > 1 && IDOL[Math.min(IDOL.length - 1, s.f.shrine - 1)],
+      s.f.shrine > 1 && '刘公的鼾声一下，一下。',
+    ),
+    choices: [
+      { label: '把手腕凑到灯上，烧掉红绳', when: (s) => s.string === 'on', go: (s) => { s.t += 10; return '09'; } },
+      { label: '去墙上找春妮的脸', when: (s) => !s.f.mask && !s.f.maskTaken && !s.f.maskBack, go: (s) => { s.t += 15; return '10'; } },
+      { label: '从供桌底下拿一壶灯油', when: (s) => !s.f.oil, go: (s) => { s.t += 5; s.f.oil = true; s.note = '你在供桌底下摸到一只陶壶，沉甸甸的，晃一晃，里面是满满的灯油。你把它塞进了怀里。'; return '08'; } },
+      { label: '把灯油泼到奶奶身上，点火', when: (s) => s.f.oil && !s.f.idol, go: (s) => { s.t += 10; return '11'; } },
+      { label: '离开祠堂，去柴房', when: (s) => !s.seen.includes('06'), go: (s) => { s.t += 15; return '06'; } },
+      { label: '离开祠堂，走屋后的水沟出村', go: (s) => { s.t += 40; return '13'; } },
+      { label: '离开祠堂，直接上后山', go: (s) => { s.t += 25; return '15'; } },
+    ],
+  });
+
+  // ---- No.09 ----
+  node('09', {
+    title: '灯下', bg: 'shrine',
+    enter: (s) => { s.string = 'burned'; },
+    text: (s) => P(
+      '你把手腕伸到灯火上。',
+      '火不烫。像把手伸进了井水里，凉得发麻。',
+      '红绳一点一点变黑，蜷起来，然后整根从你手腕上掉下去，像一条死了的红虫子。',
+      '刘公手里的铃颤了一下，又不动了。',
+      '豆子松了口气：“铃不认得你了。”',
+      w(s, 'ayun') ? '你回头招呼阿芸也过来烧。她往后退了一步，把左手藏到了背后：“我不……我不敢，我怕疼。”' : '',
+    ),
+    choices: [
+      { label: '抓住阿芸的手，硬把她的绳子也烧了', when: (s) => w(s, 'ayun'), go: (s) => {
+        clue(s, 'c8');
+        s.note = '你把她拽到灯前，按住她的手腕。她的红绳一碰火苗就着了，冒出一股焦糊的棉线味。没有凉意，火是烫的，烫得她尖叫了一声，在手腕上燎出一个水泡。绳子没有整根掉下来，是一截一截烧断的。\n\n刘公的鼾声停了半拍，又接上了。阿芸捂着手腕，低着头，你看不见她的脸。';
+        return '08';
+      } },
+      { label: '回到供桌前', go: () => '08' },
+    ],
+  });
+
+  // ---- No.10 ----
+  node('10', {
+    title: '脸帘', bg: 'masks',
+    text: () => P(
+      '豆子沿着墙一块一块地摸过去，摸到最底下一排，停住了。',
+      '那块布上是一张年轻女人的脸，眼睛闭着，嘴微微张着，像是正唱到一半。',
+      '“是我娘。”',
+      '你把它摘下来。布是温的，像刚从人脸上揭下来。',
+    ),
+    choices: [
+      { label: '把它凑到灯上烧了', go: (s) => {
+        s.f.mask = true;
+        ring(s, 1);
+        s.t += 40;
+        s.note = '布一碰到火，灯苗“轰”地蹿起来一尺多高。\n\n墙上几十张脸，同时睁开了眼睛。\n\n奶奶那张平平的脸，慢慢转了过来，对着你。刘公一下子坐直了，手里的铃摇得震天响：“谁！谁在那儿！”\n\n豆子拽着你从后门冲了出去。跑过冯家后墙的时候，你听见隔壁院子里，那支没有词的调子停了。然后，一个女人的声音，带着哭腔，唱出了词：“篱笆开花一朵朵……”\n\n你们一直跑到了后山脚下，才敢停下来喘气。';
+        return '15';
+      } },
+      { label: '叠好揣进怀里，带走', go: (s) => { s.f.maskTaken = true; s.note = '你把那块布叠成小方块，塞进贴身的口袋。豆子盯着你的口袋看了很久，什么也没说。'; return '08'; } },
+      { label: '挂回去', go: (s) => { s.f.maskBack = true; s.note = '你把布挂回了原处。豆子盯着那块布，一直盯到你们离开。'; return '08'; } },
+    ],
+  });
+
+  // ---- No.11 ----
+  node('11', {
+    title: '奶奶', bg: 'fire',
+    enter: (s) => { s.f.idol = true; s.alarm = 3; s.rang += 1; },
+    text: () => P(
+      '你拔掉陶壶的塞子，把灯油泼在奶奶的红袄上，泼在她那张平平的脸上。',
+      '豆子捂住了嘴。',
+      '你端起那盏铜灯，往她身上一倾。',
+      '火像是等了很久，“呼”地一下爬满了她全身。红袄卷起来，变黑，木头噼噼啪啪地响。她身后那面墙上的白布一块接一块地卷边、发黄、烧穿，几十张脸在火里扭成一团。',
+      '然后你听见了。整个村子，每一户，都有女人在尖叫。尖叫完是一片死寂。死寂过后，是哭声，很多很多人的哭声，还有人在喊名字，喊的是她们自己的名字，喊她们老家的地名。',
+      '刘公连滚带爬地摸出了门，扯着嗓子喊“走水了”。全村的铃自己响了起来，越响越急，然后一只接一只，“啪”地裂开了。',
+    ),
+    choices: [
+      { label: '趁乱跑出去', go: (s) => { s.t += 10; return '24'; } },
+    ],
+  });
+
+  // ---- No.12 ----
+  node('12', {
+    title: '大路', bg: 'village',
+    text: () => P(
+      '你走过第一户门口。叮。',
+      '第二户。叮。',
+      '第三户。叮。',
+      '你每走一步，身边就响一声，像有人在给你数数。豆子的脸白了。',
+      '身后有扇门开了。一道手电光扫过来，冯有贵的声音，带着刚睡醒的沙哑：“谁？”',
+      '豆子一把把你推向晒谷场边上的草垛。',
+    ),
+    choices: [
+      { label: '钻进草垛，一动不动', go: (s) => {
+        s.t += 35;
+        s.note = '你蜷在草垛里，草茎扎着脸。手电光从草缝里晃过去，又晃回来。\n\n脚步声停在草垛前面。一根钢叉“噗”地扎进来，擦着你的小腿过去，扎进了你身后的土里。\n\n你咬着自己的手背，一声没出。\n\n很久以后，脚步声才走远。冯有贵骂骂咧咧地往村口去了，说要叫人。';
+        return '15';
+      } },
+      { label: '往村口跑', go: (s) => { s.endWhy = 'gate'; return 'E3'; } },
+    ],
+  });
+
+  // ---- No.13 ----
+  node('13', {
+    title: '水沟', bg: 'ditch',
+    enter: (s) => { ring(s, 1); },
+    text: (s) => P(
+      '屋后的水沟里全是烂泥，没过脚踝。猪圈的味道熏得人睁不开眼。',
+      '路过一户后门的时候，你看见门槛上坐着一个男人。屋里没点灯，你只看见他嘴边那一点烟头，一明一暗。',
+      '他看见你们了。他没动，也没喊，就那么坐着，抽着烟，看着你们一步一步从他面前蹚过去。',
+      '等你们走出去十几步，他咳嗽了一声。很响。',
+      '你后背的汗一下子全出来了。他们都知道。这个村子里，每个人都知道。',
+      '再往前，一扇后窗里突然伸出一只手，一把揪住了你的衣领。“别出声。”是个女人的声音，很哑。',
+      '窗里是一张瘦削的脸，三十多岁，眼睛亮得像刀子。她左手腕上也系着红绳，已经磨得发白。',
+      '“我叫秦小雁，在这儿两年了。”她扫了一眼豆子，“春妮家的？你们动静太大了。后山那条路，我比他熟。”',
+      w(s, 'ayun') ? '她的目光落到阿芸身上，停了很久。阿芸往你身后缩了缩。' : '',
+    ),
+    choices: [
+      { label: '让秦姐一起走', go: (s) => { s.w.qin = true; s.t += 10; return '14'; } },
+      { label: '不信她，继续走', go: (s) => { s.t += 40; return '15'; } },
+    ],
+  });
+
+  // ---- No.14 ----
+  node('14', {
+    title: '秦姐', bg: 'ditch',
+    enter: (s) => { if (w(s, 'ayun')) clue(s, 'c6'); },
+    text: (s) => P(
+      '秦姐翻出窗户，动作很利落。',
+      '她一边走一边压着嗓子说话，说得很快：开脸要吃满七天“喜饭”，她吃一口吐一口，吐了两年，冯家那边以为她早就开过了。她从烟盒里抽出一张锡纸，背面用指甲刻着一张图：坟地、鸦口、鹰嘴崖、石门镇。',
+      '“栈道中间那几段麻绳是烂的，踩外侧的木板，别抓绳子。”',
+      '“我的绳子还在，”她看了一眼自己的手腕，“过坟地的时候，离那些铃远一点。”',
+      w(s, 'ayun') && P(
+        '走到一处拐角，秦姐把你拉到一边，声音压得更低了：',
+        '“柴房那个丫头。新娘抬进村，我两年里个个都见过。没见过她。”',
+        '“当着她的面，就说我们走河谷。到了鸦口再拐上鹰嘴崖。”',
+      ),
+    ),
+    choices: [
+      { label: '照秦姐说的，当着阿芸的面说走河谷', when: (s) => w(s, 'ayun'), go: (s) => {
+        s.f.lied = true;
+        s.t += 40;
+        s.note = '“我们走河谷，”你大声说，“顺着河下去，天亮就到镇上了。”\n\n阿芸点点头，把这话轻声重复了一遍：“河谷。”';
+        return '15';
+      } },
+      { label: '不用瞒，大家一起走', go: (s) => { s.t += 40; return '15'; } },
+    ],
+  });
+
+  // ---- No.15 鸦口 ----
+  node('15', {
+    title: '鸦口', bg: 'grave',
+    enter: (s) => { if (w(s, 'ayun')) clue(s, 'c4'); },
+    text: (s) => P(
+      s.alarm >= 3 ? '山下的村子灯火通明，那支没有词的调子从四面八方飘上来，越来越近。' : '山下的村子还黑着。只有祠堂那一点灯亮着，像一只不眨的眼睛。',
+      '后山上全是坟。没有碑，只有一个个小土包，每个土包上插着一根竹竿，竹竿上挂着一只铃。',
+      '“都是新娘，”豆子说，“开过脸的。老死的，病死的，跑的时候摔死的。”',
+      '坟地后头，两块大石头之间有一道豁口，几只乌鸦蹲在石头上，一动不动地看着你们。',
+      w(s, 'ayun') ? '“到鸦口了，”阿芸松了口气，“过了这儿就好走了。”\n\n豆子扭过头，看了她一眼。' : '',
+      ringers(s) > 0
+        ? `坟地中间有条近路，可那些铃挂得低，${s.string === 'on' ? '你手上的红绳' : '秦姐手上的红绳'}还在。绕着坟地外圈走，得多爬一段陡坡。`
+        : '你手上的红绳没了。坟地中间那条近路，铃应该不会响。',
+    ),
+    choices: [
+      { label: '让阿芸一个人先从坟中间走过去探路', when: (s) => w(s, 'ayun') && !s.f.know, go: (s) => { s.t += 10; return '16'; } },
+      { label: '穿过坟地，走近路', go: (s) => {
+        s.t += 60;
+        if (ringers(s) > 0) {
+          ring(s, 1);
+          s.note = '你们刚走进坟地，第一只铃就响了。然后是第二只，第三只。一路走过去，身后的坟头一只接一只地响，像在一个传一个地报信。\n\n山下，那支调子拐了个弯，朝后山这边来了。你们一路跑过了鸦口。';
+        }
+        return '18';
+      } },
+      { label: '绕着坟地外圈走', go: (s) => { s.t += 85; return '18'; } },
+    ],
+  });
+
+  // ---- No.16 ----
+  node('16', {
+    title: '试铃', bg: 'grave',
+    enter: (s) => { clue(s, 'c9'); s.f.know = true; },
+    text: (s) => P(
+      '“你先过去，看看前面有没有人。”',
+      '阿芸犹豫了一下，还是去了。她从坟堆中间穿过去，一步一步，离那些铃最近的时候，只隔着一拃。',
+      '一只都没响。',
+      w(s, 'qin') ? '秦姐跟着往前迈了一步，离她最近的那只铃立刻“叮”了一声。秦姐退了回来，盯着阿芸的背影，脸色铁青。' : '',
+      '阿芸走到鸦口，回过头，笑着朝你们招手：“没事，走吧。”',
+      '然后她看见了你的脸。她的笑停住了。',
+    ),
+    choices: [
+      { label: '扑上去捂住她的嘴', go: (s) => {
+        s.w.ayun = false;
+        if (w(s, 'qin')) {
+          s.f.tied = true;
+          s.t += 15;
+          s.note = '你和秦姐一左一右扑上去。秦姐一把捂住她的嘴，你抽出皮带，把她的手反绑在坟头的竹竿上，又用她自己的袖子堵住了她的嘴。\n\n她的袖口里掉出一只小铜铃，滚到了草里。秦姐捡起来，攥在手心，一直没松开。\n\n阿芸瞪着你们，眼睛里没有一滴眼泪。';
+          return '18';
+        }
+        ring(s, 3);
+        s.exposed = true;
+        s.note = '你扑上去，捂住了她的嘴。她一口咬在你的虎口上，咬得你松了手，一翻身就往山下跑。她从袖子里摸出一只小铜铃，边跑边摇，扯着嗓子喊：“人在鸦口——！”\n\n那声音一点都不像个哭了三天的姑娘。';
+        return '17';
+      } },
+      { label: '问她：“你到底是谁？”', go: (s) => {
+        s.w.ayun = false;
+        s.exposed = true;
+        ring(s, 3);
+        s.note = '阿芸不哭了。她用袖子擦了擦脸，擦掉的好像不只是泪，还有一层什么东西。\n\n“我生在石瓮村，”她说，口音一下子变了，“我爹是村长。每回有新娘想跑，我就去柴房里坐几天。”\n\n她从袖子里摸出一只小铜铃，举起来，用力摇。';
+        return '17';
+      } },
+      { label: '装作没看见，继续走', go: (s) => { s.t += 50; s.note = '你什么都没说，跟了上去。阿芸也什么都没说。你们一前一后走过鸦口，谁都没有回头。'; return '18'; } },
+    ],
+  });
+
+  // ---- No.17 追 ----
+  node('17', {
+    title: '追', bg: 'chase',
+    text: (s) => P(
+      (s.from === '06' || s.from === '07') && '你刚把门闩插上，里面的哭声就停了。然后她开始喊，喊的不是“救命”，是“冯家媳妇跑了——往后山去了——”。\n\n那声音一点都不像一个哭了三天的姑娘。',
+      '山下的灯一盏接一盏亮起来。手电光、火把，排成一条线往山上涌。走在最前面的是女人们，光着脚，披着头发，哼着那支调子，一步一步，不快，可是一步都不停。',
+      '豆子拽着你：“山腰上有个废炭窑，以前烧炭的人挖的。”',
+    ),
+    choices: [
+      { label: '跟豆子钻进废炭窑', go: (s) => {
+        s.t += 60;
+        s.note = '炭窑里全是黑灰，你们挤在最里头，大气不敢出。\n\n脚步声到了窑口。那支调子就在外面，近得像是贴着你的耳朵在哼。有一只光脚踩进了窑口的灰里，停住了。\n\n过了很久，很久，那只脚收了回去。调子慢慢往山梁那边去了。';
+        return '18';
+      } },
+      { label: '往林子深处跑', go: (s) => {
+        s.t += 35;
+        s.f.hurt = true;
+        s.note = '你们一头扎进林子，荆棘把胳膊划得全是血道子。一脚踩空，你从一道土坎上滚了下去，右脚踝“咔”的一声。\n\n豆子把你拽起来。你咬着牙，一瘸一拐地往前挪，身后的调子渐渐远了。';
+        return '18';
+      } },
+      { label: '秦姐说：“我把他们引开。”', when: (s) => w(s, 'qin'), go: (s) => {
+        s.w.qin = false;
+        s.f.qinCaught = true;
+        s.t += 30;
+        s.note = '“你们往鸦口走，别回头。”秦姐把那张锡纸地图塞进你手里，转身往另一边的山坡冲了下去，一边跑一边扯着嗓子骂，骂冯家，骂村长，骂奶奶。\n\n火把全朝她那边去了。\n\n你没有回头。你听见她的骂声越来越远，最后停了。';
+        return '18';
+      } },
+    ],
+  });
+
+  // ---- No.18 ----
+  node('18', {
+    title: '守林屋', bg: 'hut',
+    text: (s) => P(
+      s.f.lied && w(s, 'ayun') ? '过了鸦口，秦姐没往河谷那边走，一拐，带着你们上了去鹰嘴崖的山梁。阿芸看了一眼河谷的方向，没吭声。' : '',
+      '山梁上有间守林屋，木板墙，窗户里透出一点煤油灯的光。',
+      '你从板缝里往里看。一个男人歪在椅子上打鼾，脚边靠着一根扁担。床腿上绑着一个姑娘，二十出头，嘴唇干得起了皮，右脚踝肿得发紫。',
+      '豆子小声说：“她叫小棠，上个月跑过一回，被大庆抓回来，脚给打断了。”',
+      '门口拴着一条大黄狗，下巴搁在食盆边上，睡着了。',
+      w(s, 'ayun') && !s.f.know ? '阿芸拉了拉你的袖子：“别管她了，带着她走不快的。”' : '',
+      s.f.hurt ? '你的脚踝一阵一阵地疼。' : '',
+    ),
+    choices: [
+      { label: '悄悄进去，把小棠放出来', go: (s) => {
+        s.w.tang = true;
+        if (w(s, 'ayun') && !s.f.know) {
+          clue(s, 'c7');
+          ring(s, 1);
+          s.t += 45;
+          s.note = '你们刚摸到门口，阿芸脚下一绊，“哐当”一声，把狗盆踢翻了。\n\n大黄狗跳起来狂叫。大庆从椅子上弹起来，抄起扁担。你冲进去一刀割断绳子，背起小棠就跑。扁担砸在门框上，木屑溅了你一脸。\n\n你们在林子里绕了好大一圈，才把狗叫声甩在身后。阿芸一路都在小声道歉。';
+          return '19';
+        }
+        s.t += 30;
+        s.note = '你们贴着墙根绕到屋后，从窗户翻进去。豆子用一块碎瓷片割绳子，割了很久。小棠一声没出，眼泪一直在流。\n\n你背起她，从窗户翻出来的时候，大黄狗抬起头看了你们一眼，又把下巴搁回了食盆边上。';
+        return '19';
+      } },
+      { label: '记住这个地方，先走，出去带警察回来', go: (s) => {
+        s.f.tangLeft = true;
+        s.t += 5;
+        s.note = '你在心里把这间屋子记了三遍：鹰嘴崖下面，山梁上，木板墙，门口一条黄狗。\n\n走出去很远，你回头看了一眼。那点煤油灯的光还亮着。';
+        return '19';
+      } },
+    ],
+  });
+
+  // ---- No.19 ----
+  node('19', {
+    title: '鹰嘴崖', bg: 'cliff',
+    enter: (s) => { if (s.f.mask && !w(s, 'chunni')) s.w.chunni = true; },
+    text: (s) => P(
+      '天边开始发青了。',
+      '鹰嘴崖是一整面直上直下的石壁，栈道钉在半腰上：一根根铁桩打进石缝，上面铺着木板，外侧拉着一道麻绳当扶手。底下看不见，只听见河水在很深的地方轰轰地响。',
+      `你看了一眼天色，现在大概是 ${hhmm(s.t)}。过了栈道，下山还有很长一段路。头班车是 06:10。`,
+      s.f.mask && P(
+        '身后有人在跑，光着脚，踩得碎石哗哗地往下滚。',
+        '你回过头，是春妮。',
+        '她的头发全乱了，脸上全是泪，跑到豆子跟前，一把把他搂进怀里，搂得紧紧的。“豆豆，”她一遍一遍地喊，“豆豆。”',
+        '豆子哭得说不出话来。',
+      ),
+      s.f.maskTaken && !s.f.mask ? '豆子一直在摸你口袋里那块叠起来的布，摸一下，又缩回手。' : '',
+    ),
+    choices: [
+      { label: '一个接一个，上栈道', go: (s) => {
+        if (w(s, 'ayun')) { s.t += 15; return '20'; }
+        s.t += 40 + (s.f.hurt ? 10 : 0) + (w(s, 'tang') ? 10 : 0);
+        return '22';
+      } },
+    ],
+  });
+
+  // ---- No.20 反水 ----
+  const runFrom20 = (s) => {
+    if (s.f.lied) { s.w.ayun = false; s.t += 25; return '22'; }
+    if (w(s, 'chunni')) return '25';
+    s.endWhy = 'ayun';
+    return 'E4';
+  };
+  node('20', {
+    title: '反水', bg: 'cliff',
+    enter: (s) => { ring(s, 1); },
+    text: (s) => P(
+      '走到栈道中间，木板“吱呀”响了一声。',
+      '跟在后面的阿芸停住了。',
+      '她从袖子里摸出一只小铜铃，只有拇指大，黄澄澄的。',
+      '“对不起啊。”她说。',
+      '她举起铃，用力一摇。叮——那声音撞在石壁上，又弹回来，一层一层地往山下传。',
+      '“人在鹰嘴崖——！”她的嗓门一下子亮了，口音也变了，一点都不像个哭了三天的城里姑娘。',
+      s.f.lied
+        ? '远处的河谷里亮起一串火把，晃了晃，开始掉头往这边移。太远了，翻过来至少要半个钟头。阿芸看着那串火把，脸一下子白了。'
+        : '火把就在身后的鸦口，一长串，正往栈道这边涌。最多十分钟。',
+      s.f.know ? '你早就防着她。你离她只有一步远。' : '',
+    ),
+    choices: [
+      { label: '夺过她的铃，扔下山崖', go: (s) => {
+        if (s.f.lied || s.f.know) {
+          s.w.ayun = false;
+          s.t += 30;
+          if (!s.f.lied) s.alarm = 3;
+          s.note = '你一把攥住她的手腕，把铃抠出来，甩手扔了出去。铃在半空中响了最后一声，掉进了底下的河里。\n\n阿芸往回跑了。你们往前跑。' + (s.f.lied ? '' : '身后的火把一直跟着，可你们没有再停下来。');
+          return '22';
+        }
+        return runFrom20(s);
+      } },
+      { label: '把灯油泼在身后的麻绳上，点火', when: (s) => s.f.oil && !s.f.idol, go: () => '21' },
+      { label: '拉着大家往前跑', go: (s) => runFrom20(s) },
+      { label: '对她说：“跟我们走吧。你也可以不回去。”', go: (s) => {
+        s.t += 10;
+        s.f.pleaded = true;
+        s.note = '阿芸愣住了。铃举在半空中，没有再摇。\n\n栈道上的风很大，吹得她的头发糊了一脸。你看不清她的表情。\n\n“我生在这儿。”她说。\n\n她转过身，一边摇着铃，一边朝火把那边走回去了。';
+        return runFrom20(s);
+      } },
+    ],
+  });
+
+  // ---- No.21 ----
+  node('21', {
+    title: '火', bg: 'cliffFire',
+    enter: (s) => { s.w.ayun = false; s.f.burnBridge = true; },
+    text: () => P(
+      '你拔掉陶壶的塞子，把灯油泼在身后那段麻绳上，泼在木板上。',
+      '豆子把火柴递给你，手抖得划了三次才划着。',
+      '火顺着麻绳跑，跑得比人快。干透了的老木板“轰”地着了起来，火苗窜起一人多高。',
+      '阿芸站在火的那一边。她还举着那只铃，隔着火看着你们，没有喊，也没有摇。',
+      '火把到了栈道口，停住了。那些光着脚的女人站在最前面，一排，隔着火，静静地哼着那支调子。',
+    ),
+    choices: [
+      { label: '转身，跑', go: (s) => { s.t += 30; return '22'; } },
+    ],
+  });
+
+  // ---- No.25 ----
+  node('25', {
+    title: '春妮', bg: 'cliff',
+    text: () => P(
+      '春妮松开了豆子。',
+      '她转过身，一个人往回走，走到栈道最窄的那一段，站住了，挡在你们和火把中间。',
+      '然后她开始唱。不是那支没有词的调子，是有词的：“篱笆开花一朵朵，阿妈在河那边坐……”',
+      '走在最前面的那几个女人停住了。有一个跟着哼了一句，又一个也跟着哼。她们站在窄窄的栈道上，一个挨一个，谁都没有再往前走一步。后面的男人挤不过来，骂声一片。',
+      '春妮回过头，冲豆子笑了一下。不是那种笑。',
+      '“走。”她说，“娘随后就来。”',
+    ),
+    choices: [
+      { label: '拉着豆子，往前跑', go: (s) => {
+        s.w.ayun = false;
+        s.t += 30;
+        s.note = '你们跑到栈道尽头的时候，身后的歌声还没停。\n\n又过了一会儿，一个光着脚的人影从栈道上跑过来，越跑越近。是春妮。她身后，那几个女人还站在原地，唱着同一支歌。';
+        return '22';
+      } },
+    ],
+  });
+
+  // ---- No.22 ----
+  node('22', {
+    title: '下山', bg: 'dawn',
+    text: (s) => P(
+      '过了鹰嘴崖，是一大片茶山。天一点一点亮起来，茶垄一行一行的，露水打湿了裤腿。',
+      '你远远看见了石门镇的屋顶，还有镇口那条柏油路。',
+      `现在是 ${hhmm(s.t)} 左右。`,
+      s.alarm >= 2 ? '盘山公路那边，隐隐传来摩托车的声音。一辆，两辆，往镇子的方向去了。' : '',
+      s.f.hurt ? '你的脚踝肿得像个馒头，每一步都疼得眼前发黑。' : '',
+      w(s, 'tang') ? '小棠趴在你背上，一直在小声说：“放下我吧，放下我吧。”' : '',
+    ),
+    choices: [
+      { label: '跑！', go: (s) => { s.t += 50 + (s.f.hurt ? 15 : 0) + (w(s, 'tang') ? 10 : 0); return '23'; } },
+    ],
+  });
+
+  // ---- No.23 ----
+  const pickEnd = (s) => (w(s, 'chunni') ? 'E1' : 'E2');
+  node('23', {
+    title: '石门镇', bg: 'town',
+    text: (s) => {
+      if (s.t > BUS) return P(`你冲到镇口的时候，是 ${hhmm(s.t)}。`, '车站的牌子底下空空的。头班车的尾灯刚刚拐过前面的弯，一闪，就不见了。', '身后的山路上，摩托车的声音越来越近。');
+      return P(
+        `你冲到镇口的时候，是 ${hhmm(s.t)}。`,
+        '车站的牌子底下停着一辆旧中巴，车门开着，司机趴在方向盘上打哈欠。车头的牌子上写着：石门—县城。',
+        s.alarm >= 2 ? '车站旁边停着两辆摩托。一个男人蹲在路边抽烟，正朝这边看。是冯有贵。他慢慢站了起来。' : '',
+      );
+    },
+    choices: [
+      { label: '……', when: (s) => s.t > BUS, go: () => 'E5' },
+      { label: '冲上车，冲司机大喊：“有人拐卖！快关门！”', when: (s) => s.t <= BUS && s.alarm >= 2, go: (s) => { s.f.shout = true; return pickEnd(s); } },
+      { label: '躲进车站边上的小卖部', when: (s) => s.t <= BUS && s.alarm >= 2, go: () => 'E5' },
+      { label: '上车', when: (s) => s.t <= BUS && s.alarm < 2, go: (s) => pickEnd(s) },
+    ],
+  });
+
+  // ---- No.24 ----
+  node('24', {
+    title: '大火', bg: 'fire',
+    enter: (s) => { s.w.chunni = true; },
+    text: () => P(
+      '整个村子都被照成了橘红色。男人们拎着水桶往祠堂跑，撞成一团。',
+      '巷子里站满了女人。她们光着脚，摸着自己的脸，一遍一遍地喊自己的名字，喊自己老家的地名。有人坐在地上嚎啕大哭，有人在笑。',
+      '春妮从冯家隔壁冲出来，一把抱住了豆子。“豆豆，”她喊，“豆豆。”',
+      '有几个女人开始往村口走。一开始是几个，后来是一串。没有人拦。男人们都在祠堂那边。',
+    ),
+    choices: [
+      { label: '跟着她们，走出村口', go: () => 'E6' },
+    ],
+  });
+
+  // ---- 结局里交代同伴的去向 ----
+  function others(s) {
+    const out = [];
+    if (w(s, 'qin')) out.push('秦姐坐在你旁边，手里一直攥着那张锡纸地图。车开出镇子的时候，她把地图撕成碎片，从窗口撒了出去。');
+    else if (s.f.qinCaught) out.push('三个月后，警察进了石瓮村，在冯家的地窖里找到了秦姐。她瘦得脱了相，见到穿警服的人，说的第一句话是：“我一口都没咽。”');
+    if (w(s, 'tang')) out.push('小棠靠着车窗睡着了，脚踝肿得发亮。睡梦里，她一直攥着你的衣角。');
+    else if (s.f.tangLeft) out.push('你在派出所说的第一件事，就是鹰嘴崖下面那间守林屋。警察找到小棠的时候，她还绑在床腿上。她说她一直在数日子，数到第十一天，门开了。');
+    if (s.f.tied) out.push('警察在后山坟地的一根竹竿上，找到了半截皮带。阿芸不见了。村里人说，村长家从来没有过女儿。');
+    else if (s.f.burnBridge) out.push('鹰嘴崖的栈道烧断了，后来一直没修。');
+    else if (s.exposed || s.f.know || s.f.pleaded) out.push('警察进村那天，村长家的女儿阿芸不在家。有人说她去县城读书了，有人说她嫁到了山外。');
+    return out;
+  }
+  const E = {
+    E1: { num: 1, title: '出山', tag: '好结局',
+      text: (s) => P(
+        s.f.shout ? '你冲上车，冲司机喊了一嗓子。司机愣了一秒，猛地一拍按钮，车门“嗤”地关上了。冯有贵扑过来拍车门，车上一个卖菜的大爷站起来，用扁担顶住了车窗。车开了。' : '你们上了车。司机看了一眼你们一身的泥，什么也没问。',
+        '春妮坐在最后一排，豆子枕在她腿上睡着了。她摸着豆子的头发，一遍一遍地，很小声地唱：“篱笆开花一朵朵，阿妈在河那边坐……”',
+        ...others(s),
+        '车开出石门镇的时候，太阳刚好翻过山头。',
+        '后来你在手机上刷到一条新闻：某县破获一起拐卖妇女案，解救被拐妇女十一人。新闻里没写村子的名字。',
+        '你左手腕上那圈红印，过了很久才淡下去。从那以后，陌生人递过来的水，你一口都没再喝过。',
+      ) },
+    E2: { num: 2, title: '天亮', tag: '好结局',
+      text: (s) => P(
+        s.f.shout ? '你冲上车，冲司机喊了一嗓子。司机愣了一秒，猛地一拍按钮。冯有贵扑过来拍车门，车上一个卖菜的大爷站起来，用扁担顶住了车窗。' : '你们走到车门口。',
+        '豆子一直把你送到车门口，然后松开了手。',
+        '“我娘还在里面。”他说。',
+        '你想拉住他，他已经转身跑了，瘦瘦的一条影子，往山上跑，越来越小。',
+        ...others(s),
+        '三个月后，你跟着警察回了石瓮村。祠堂还在，奶奶还坐在那儿。春妮坐在门口剥豆子，冲每个人笑，冲你也笑。',
+        '豆子从屋里冲出来，一头撞进你怀里。他长高了一点，还是那么瘦。',
+        '他说：“姐姐，我娘的脸，还挂在墙上。”',
+      ) },
+    E3: { num: 3, title: '第七夜', tag: '坏结局',
+      text: (s) => P(
+        s.endWhy === 'gate' ? '村口那只最大的铃，在你离它还有十几步的时候就响了。村长从门洞里站起来，手里什么都没拿。他不用拿。他身后的女人们已经围上来了。' : '他们追上了你。没有人打你，也没有人骂你。女人们围上来，一边一个挽住你的胳膊，像挽着一个刚回娘家的姐妹，哼着那支调子，把你领回了村里。',
+        '第七天晚上，祠堂里点满了灯。',
+        '冯婆用一块湿白布盖住你的脸。布是凉的，贴上来的时候，你闻到了灯油和香灰的味道。你听见有人在念什么，听不懂。你只觉得脸上越来越轻，越来越轻。',
+        '第二天下午，你坐在冯家门口剥豆子。太阳很好，你一直在笑，嘴里哼着一支调子，你也不知道是哪里学来的。',
+        '一个瘦瘦的小男孩从门口走过去，看了你很久。你冲他笑了笑，跟冲谁都一样。',
+        '过了几天，你看见他蹲在柴房后面，往门缝里塞了一把生锈的钥匙。你笑着看着他，不知道他在干什么。',
+      ) },
+    E4: { num: 4, title: '她', tag: '坏结局',
+      text: (s) => P(
+        '火把涌上栈道。你们被堵在最窄的那一段，前面是悬崖，后面是人。',
+        s.f.pleaded ? '阿芸站在人群最后面，没有再看你。' : '阿芸走在人群最前面，把那只小铜铃揣回了袖子里。',
+        '后来你才知道，她是村长的女儿，生在石瓮村，长在石瓮村。每回有新娘想跑，她就去柴房里坐几天，哭几天，等着有人来救她。',
+        '第七天晚上，你的脸挂到了祠堂的墙上，挂在最底下那一排。',
+        '一个月后，又有一个姑娘被关进了冯家隔壁。半夜，她听见柴房里有人在哭，哭得很伤心。',
+        '“带我走，”那个声音说，“求你了，求求你……”',
+      ) },
+    E5: { num: 5, title: '晚一班', tag: '还算好的结局',
+      text: (s) => P(
+        s.t > BUS
+          ? '头班车已经走了。摩托车的声音从山路上压下来，你站在镇口，不知道该往哪儿跑。\n\n小卖部的卷帘门“哗啦”拉起来一半。一个五十多岁的阿姨探出头，看了你一眼，又看了你手腕上那圈红印一眼，一把把你们拽了进去，“哗啦”又把门拉了下来。'
+          : '你转身扎进了车站边上的小卖部。柜台后面的阿姨正要开门做生意，她看了你一眼，又看了你手腕上那圈红印一眼，“哗啦”一声把卷帘门拉到了底。',
+        '“别出声。”她说。',
+        '你们挤在货架后面，听着摩托车在门外停下，有人拍门，拍了很久，骂了几句，走了。',
+        '阿姨拿起柜台上的座机，拨了 110。七点半，警车到了。',
+        ...others(s),
+        '临走的时候，你问阿姨为什么帮你们。她撸起左手的袖子。手腕上有一圈很淡很淡的红印，跟你的一模一样。',
+        '“二十年前，”她说，“我也是从山上跑下来的。”',
+      ) },
+    E6: { num: 6, title: '灯', tag: '最好的结局',
+      text: (s) => P(
+        '天亮的时候，从石瓮村走出来的女人有二十三个。',
+        '她们光着脚，走在通往石门镇的山路上，有人扶着有人，有人背着有人。有人一边走一边念叨自己老家的门牌号，怕一停下来就又忘了。',
+        '春妮一直攥着豆子的手。走一段，她就停下来，捧着豆子的脸看一会儿，再接着走。',
+        ...others(s),
+        '后来新闻说，石瓮村祠堂失火，牵出一起持续二十多年的拐卖妇女案。',
+        '新闻配了一张照片：祠堂烧剩下的半面墙，墙上什么都没有。',
+        '你把那张照片存了下来。有时候半夜醒过来，你会摸一摸自己的脸，确认它还在。',
+      ) },
+  };
+  const ENDING_ORDER = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6'];
+
+  // ---- 对外接口 ----
+  function enter(s, id) {
+    s.from = s.node;
+    s.node = id;
+    if (!s.seen.includes(id)) s.seen.push(id);
+    if (N[id].enter) N[id].enter(s);
+  }
+  function endGame(s, id) {
+    const e = E[id];
+    s.ending = { id, num: e.num, title: e.title, tag: e.tag, text: e.text(s), t: s.t };
+  }
+  const visible = (s, n) => n.choices.filter((c) => !c.when || c.when(s));
+  function newGame() {
+    const s = {
+      v: 1, node: '', from: '', t: 10, alarm: 0, rang: 0, dinged: false, string: 'on',
+      f: {}, w: { dou: true }, clues: [], seen: [], note: '', ending: null, endWhy: '', exposed: false, hist: [],
+    };
+    enter(s, '01');
+    return s;
+  }
+  function view(s) {
+    if (s.ending) return { mode: 'ending', ...s.ending };
+    const n = N[s.node];
+    return {
+      mode: 'node', id: n.id, title: n.title, bg: n.bg, note: s.note,
+      text: typeof n.text === 'function' ? n.text(s) : n.text,
+      choices: visible(s, n).map((c) => c.label),
+    };
+  }
+  function choose(s, i) {
+    if (s.ending) return;
+    const c = visible(s, N[s.node])[i];
+    if (!c) return;
+    s.hist.push(JSON.stringify({ ...s, hist: [] }));
+    if (s.hist.length > 60) s.hist.shift();
+    const rang = s.rang;
+    s.note = '';
+    const next = c.go(s);
+    if (next[0] === 'E') endGame(s, next);
+    else enter(s, next);
+    s.dinged = s.rang > rang;
+  }
+  // 退一步：回到上一个选择之前
+  function undo(s) {
+    if (!s.hist.length) return s;
+    const prev = JSON.parse(s.hist[s.hist.length - 1]);
+    prev.hist = s.hist.slice(0, -1);
+    prev.dinged = false;
+    return prev;
+  }
+  const bgOf = (s) => (s.ending ? endBg(s.ending.id) : N[s.node].bg);
+  const endBg = (id) => ({ E1: 'dawn', E2: 'town', E3: 'shrine', E4: 'masks', E5: 'town', E6: 'fire' }[id]);
+
+  return { newGame, view, choose, undo, hhmm, bgOf, BUS, CLUES, ENDINGS: E, ENDING_ORDER, N };
+})();
+globalThis.Story = Story;
+/*CORE-END*/
+</script>
+<script>
+
+// 背景“老照片”：每个场景用 canvas 画一张，再做褪色、颗粒、划痕和暗角
+const Art = (() => {
+  function rng(seed) {
+    let t = seed >>> 0;
+    return () => {
+      t = (t + 0x6d2b79f5) >>> 0;
+      let x = Math.imul(t ^ (t >>> 15), t | 1);
+      x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+      return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const hash = (str) => [...str].reduce((a, c) => Math.imul(a ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
+  let grainTile = null;
+  function grain() {
+    if (grainTile) return grainTile;
+    const c = document.createElement('canvas');
+    c.width = c.height = 180;
+    const g = c.getContext('2d'), img = g.createImageData(180, 180);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = Math.random() * 255;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+      img.data[i + 3] = 46;
+    }
+    g.putImageData(img, 0, 0);
+    grainTile = c;
+    return c;
+  }
+
+  // ---- 画画用的小零件 ----
+  function vgrad(g, w, h, stops, y0 = 0, y1 = h) {
+    const gr = g.createLinearGradient(0, y0, 0, y1);
+    stops.forEach((c, i) => gr.addColorStop(i / (stops.length - 1), c));
+    g.fillStyle = gr;
+    g.fillRect(0, y0, w, y1 - y0);
+  }
+  function glow(g, x, y, r, color, a = 1) {
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, color);
+    gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.globalAlpha = a;
+    g.fillStyle = gr;
+    g.fillRect(x - r, y - r, r * 2, r * 2);
+    g.globalAlpha = 1;
+  }
+  function moon(g, x, y, r) {
+    glow(g, x, y, r * 5, 'rgba(210,225,230,0.28)');
+    g.fillStyle = '#dfe6e3';
+    g.beginPath();
+    g.arc(x, y, r, 0, Math.PI * 2);
+    g.fill();
+  }
+  function ridge(g, w, base, amp, color, R, step = 8) {
+    const p = R() * 9, f = 0.004 + R() * 0.006;
+    g.fillStyle = color;
+    g.beginPath();
+    g.moveTo(0, 9999);
+    for (let x = 0; x <= w + step; x += step) g.lineTo(x, base - Math.abs(Math.sin(x * f + p)) * amp - Math.sin(x * f * 3.1 + p) * amp * 0.25);
+    g.lineTo(w + step, 9999);
+    g.closePath();
+    g.fill();
+  }
+  function fog(g, w, y, hh, a) {
+    const gr = g.createLinearGradient(0, y - hh, 0, y + hh);
+    gr.addColorStop(0, 'rgba(190,200,200,0)');
+    gr.addColorStop(0.5, `rgba(190,200,200,${a})`);
+    gr.addColorStop(1, 'rgba(190,200,200,0)');
+    g.fillStyle = gr;
+    g.fillRect(0, y - hh, w, hh * 2);
+  }
+  function house(g, x, base, bw, bh, color, lit) {
+    g.fillStyle = color;
+    g.fillRect(x, base - bh, bw, bh);
+    g.beginPath();
+    g.moveTo(x - bw * 0.12, base - bh);
+    g.lineTo(x + bw / 2, base - bh - bw * 0.32);
+    g.lineTo(x + bw * 1.12, base - bh);
+    g.closePath();
+    g.fill();
+    if (lit) {
+      glow(g, x + bw * 0.5, base - bh * 0.55, bw * 0.7, lit, 0.55);
+      g.fillStyle = lit;
+      g.fillRect(x + bw * 0.38, base - bh * 0.7, bw * 0.24, bh * 0.28);
+    }
+  }
+  function bell(g, x, y, s, color = '#b89a52') {
+    g.strokeStyle = 'rgba(0,0,0,0.6)';
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(x, y - s * 2);
+    g.lineTo(x, y - s * 0.8);
+    g.stroke();
+    g.fillStyle = color;
+    g.beginPath();
+    g.moveTo(x - s * 0.9, y + s * 0.6);
+    g.quadraticCurveTo(x - s * 0.8, y - s, x, y - s);
+    g.quadraticCurveTo(x + s * 0.8, y - s, x + s * 0.9, y + s * 0.6);
+    g.closePath();
+    g.fill();
+    glow(g, x - s * 0.2, y - s * 0.2, s * 2.2, 'rgba(230,200,120,0.35)');
+  }
+  function person(g, x, base, hh, color, hair) {
+    g.fillStyle = color;
+    const hw = hh * 0.13;
+    g.beginPath();
+    g.arc(x, base - hh + hw, hw, 0, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.moveTo(x - hw * 1.1, base - hh + hw * 2.2);
+    g.lineTo(x + hw * 1.1, base - hh + hw * 2.2);
+    g.lineTo(x + hw * 1.6, base);
+    g.lineTo(x - hw * 1.6, base);
+    g.closePath();
+    g.fill();
+    if (hair) g.fillRect(x - hw, base - hh + hw, hw * 2, hh * 0.32);
+  }
+  function tree(g, x, base, hh, color) {
+    g.fillStyle = color;
+    g.fillRect(x - hh * 0.02, base - hh * 0.5, hh * 0.04, hh * 0.5);
+    g.beginPath();
+    g.moveTo(x, base - hh);
+    g.lineTo(x + hh * 0.22, base - hh * 0.35);
+    g.lineTo(x - hh * 0.22, base - hh * 0.35);
+    g.closePath();
+    g.fill();
+  }
+  function flames(g, cx, base, wid, hh, R) {
+    glow(g, cx, base - hh * 0.4, wid * 1.6, 'rgba(255,140,40,0.55)');
+    for (let i = 0; i < 26; i++) {
+      const x = cx + (R() - 0.5) * wid, fh = hh * (0.3 + R() * 0.7), fw = wid * (0.05 + R() * 0.08);
+      g.fillStyle = R() < 0.5 ? 'rgba(255,170,60,0.75)' : 'rgba(255,90,30,0.7)';
+      g.beginPath();
+      g.moveTo(x - fw, base);
+      g.quadraticCurveTo(x - fw * 0.6, base - fh * 0.6, x + (R() - 0.5) * fw, base - fh);
+      g.quadraticCurveTo(x + fw * 0.6, base - fh * 0.6, x + fw, base);
+      g.closePath();
+      g.fill();
+    }
+    for (let i = 0; i < 40; i++) {
+      g.fillStyle = 'rgba(255,200,120,0.8)';
+      g.fillRect(cx + (R() - 0.5) * wid * 1.6, base - hh - R() * hh, 1.5, 1.5);
+    }
+  }
+  function village(g, w, h, R, lit) {
+    const horizon = h * 0.46;
+    vgrad(g, w, h, ['#0b1016', '#18222a', '#25303a'], 0, horizon);
+    moon(g, w * 0.78, h * 0.12, Math.min(w, h) * 0.035);
+    ridge(g, w, horizon - h * 0.06, h * 0.12, '#141b22', R);
+    ridge(g, w, horizon, h * 0.05, '#0e1419', R);
+    vgrad(g, w, h, ['#1b1d1c', '#0c0d0d'], horizon, h);
+    // 两排房子往远处收
+    for (let side = 0; side < 2; side++) {
+      for (let i = 0; i < 6; i++) {
+        const k = 1 - i * 0.14, bw = w * 0.2 * k, bh = h * 0.16 * k;
+        const base = horizon + h * 0.32 * k * k;
+        const x = side === 0 ? w * 0.5 - w * 0.06 - bw - w * 0.36 * k * k : w * 0.5 + w * 0.06 + w * 0.36 * k * k;
+        const l = lit && R() < lit ? 'rgba(255,170,80,0.85)' : null;
+        house(g, x, base, bw, bh, '#0d0f10', l);
+        bell(g, side === 0 ? x + bw : x, base - bh * 0.9, Math.max(2, 5 * k));
+      }
+    }
+    glow(g, w * 0.5, horizon - h * 0.01, h * 0.06, 'rgba(255,200,120,0.6)');
+    g.fillStyle = 'rgba(255,215,150,0.9)';
+    g.fillRect(w * 0.5 - 2, horizon - h * 0.015, 4, 4);
+  }
+
+  // ---- 场景 ----
+  const S = {
+    room(g, w, h, R) {
+      vgrad(g, w, h, ['#08090a', '#111315', '#0a0b0c']);
+      const ww = Math.min(w * 0.6, 360), wh = ww * 0.8, x = (w - ww) / 2, y = h * 0.1;
+      const gr = g.createLinearGradient(0, y, 0, y + wh);
+      gr.addColorStop(0, '#2b3a44');
+      gr.addColorStop(1, '#45525a');
+      g.fillStyle = gr;
+      g.fillRect(x, y, ww, wh);
+      g.save();
+      g.beginPath();
+      g.rect(x, y, ww, wh);
+      g.clip();
+      moon(g, x + ww * 0.75, y + wh * 0.25, ww * 0.06);
+      ridge(g, w, y + wh * 0.75, wh * 0.2, '#1a2329', R, 6);
+      person(g, x + ww * 0.3, y + wh * 1.05, wh * 0.45, '#0b0d0e', false);
+      g.restore();
+      g.fillStyle = '#1b1612';
+      g.fillRect(x - 12, y - 12, ww + 24, 12);
+      g.fillRect(x - 12, y + wh, ww + 24, 14);
+      g.fillRect(x - 12, y, 12, wh);
+      g.fillRect(x + ww, y, 12, wh);
+      for (let i = 1; i <= 6; i++) {
+        const bx = x + (ww / 7) * i;
+        g.fillStyle = '#060606';
+        g.fillRect(bx - 3, y, 6, wh);
+        g.fillStyle = 'rgba(160,180,190,0.18)';
+        g.fillRect(bx - 3, y, 1.5, wh);
+      }
+      glow(g, w / 2, y + wh + h * 0.12, ww, 'rgba(120,150,170,0.18)');
+      g.strokeStyle = 'rgba(200,200,200,0.18)';
+      g.lineWidth = 0.7;
+      for (let i = 0; i < 7; i++) {
+        g.beginPath();
+        g.moveTo(0, 0);
+        g.lineTo(Math.cos(i * 0.22) * 90, Math.sin(i * 0.22) * 90);
+        g.stroke();
+      }
+      for (let r = 20; r < 90; r += 16) {
+        g.beginPath();
+        g.arc(0, 0, r, 0, Math.PI / 2 * 0.9);
+        g.stroke();
+      }
+    },
+    village(g, w, h, R) { village(g, w, h, R, 0.08); },
+    alarm(g, w, h, R) {
+      village(g, w, h, R, 0.9);
+      for (let i = 0; i < 9; i++) person(g, w * (0.3 + R() * 0.4), h * (0.6 + R() * 0.25), h * (0.12 + R() * 0.06), '#070808', true);
+      g.globalCompositeOperation = 'soft-light';
+      g.fillStyle = 'rgba(200,40,30,0.5)';
+      g.fillRect(0, 0, w, h);
+      g.globalCompositeOperation = 'source-over';
+    },
+    cellar(g, w, h, R) {
+      g.fillStyle = '#050505';
+      g.fillRect(0, 0, w, h);
+      g.save();
+      g.globalAlpha = 0.5;
+      const gr = g.createLinearGradient(w * 0.4, 0, w * 0.6, h * 0.6);
+      gr.addColorStop(0, 'rgba(190,210,220,0.9)');
+      gr.addColorStop(1, 'rgba(190,210,220,0)');
+      g.fillStyle = gr;
+      g.beginPath();
+      g.moveTo(w * 0.42, 0);
+      g.lineTo(w * 0.47, 0);
+      g.lineTo(w * 0.7, h * 0.62);
+      g.lineTo(w * 0.5, h * 0.62);
+      g.closePath();
+      g.fill();
+      g.restore();
+      for (let i = 0; i < 60; i++) {
+        g.fillStyle = `rgba(220,220,210,${0.2 + R() * 0.5})`;
+        g.fillRect(w * 0.45 + R() * w * 0.2, R() * h * 0.6, 1.2, 1.2);
+      }
+      g.fillStyle = 'rgba(150,170,180,0.25)';
+      g.beginPath();
+      g.ellipse(w * 0.44, h * 0.08, w * 0.05, h * 0.035, 0, 0, Math.PI * 2);
+      g.fill();
+    },
+    shed(g, w, h, R) {
+      vgrad(g, w, h, ['#16120e', '#0d0b09']);
+      for (let x = 0; x < w; x += 22 + R() * 10) {
+        g.fillStyle = `rgba(${60 + R() * 30},${45 + R() * 20},${30},0.5)`;
+        g.fillRect(x, 0, 2, h);
+      }
+      const dw = Math.min(w * 0.42, 240), dx = (w - dw) / 2, dy = h * 0.12, dh = h * 0.42;
+      g.fillStyle = '#030303';
+      g.fillRect(dx, dy, dw, dh);
+      for (let i = 0; i < 80; i++) {
+        g.strokeStyle = `rgba(${150 + R() * 60},${120 + R() * 40},60,0.35)`;
+        g.beginPath();
+        const sx = dx + R() * dw, sy = dy + dh * (0.6 + R() * 0.4);
+        g.moveTo(sx, sy);
+        g.lineTo(sx + (R() - 0.5) * 30, sy - R() * 12);
+        g.stroke();
+      }
+      g.fillStyle = '#2a2018';
+      g.save();
+      g.translate(dx + dw, dy);
+      g.rotate(0.35);
+      g.fillRect(0, 0, dw * 0.55, dh);
+      g.restore();
+      bell(g, w / 2, dy - 14, 8);
+      g.fillStyle = '#3a2b1d';
+      g.fillRect(dx - 30, dy + dh * 0.45, dw + 60, 8);
+    },
+    shrine(g, w, h, R) {
+      vgrad(g, w, h, ['#0e0907', '#1a100b', '#0a0706']);
+      for (let row = 0; row < 4; row++) {
+        for (let i = 0; i < 9; i++) {
+          const mx = w * 0.08 + i * w * 0.105, my = h * 0.05 + row * h * 0.075;
+          g.fillStyle = `rgba(${200 + R() * 30},${190 + R() * 20},${160 + R() * 20},${0.16 + R() * 0.1})`;
+          g.fillRect(mx, my, w * 0.07, h * 0.055);
+        }
+      }
+      const cx = w / 2, base = h * 0.5, sh = h * 0.34;
+      glow(g, cx, base - sh * 0.4, sh, 'rgba(255,170,90,0.35)');
+      g.fillStyle = '#5a1712';
+      g.beginPath();
+      g.moveTo(cx - sh * 0.38, base);
+      g.lineTo(cx - sh * 0.24, base - sh * 0.62);
+      g.lineTo(cx + sh * 0.24, base - sh * 0.62);
+      g.lineTo(cx + sh * 0.38, base);
+      g.closePath();
+      g.fill();
+      g.fillStyle = '#c9b48f';
+      g.beginPath();
+      g.ellipse(cx, base - sh * 0.78, sh * 0.13, sh * 0.17, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = 'rgba(255,240,210,0.25)';
+      g.beginPath();
+      g.ellipse(cx - sh * 0.03, base - sh * 0.82, sh * 0.05, sh * 0.08, -0.3, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = '#2a0b08';
+      g.fillRect(cx - sh * 0.3, base - sh * 0.2, sh * 0.6, sh * 0.06);
+      glow(g, cx, base + sh * 0.1, sh * 0.5, 'rgba(255,190,90,0.7)');
+      g.fillStyle = '#ffd38a';
+      g.beginPath();
+      g.ellipse(cx, base + sh * 0.06, 5, 11, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = '#6b5124';
+      g.fillRect(cx - 18, base + sh * 0.1, 36, 10);
+    },
+    masks(g, w, h, R) {
+      vgrad(g, w, h, ['#120c09', '#0a0706']);
+      const cols = Math.max(4, Math.round(w / 90)), cw = w / cols;
+      for (let row = 0; row < 6; row++) {
+        for (let i = 0; i < cols; i++) {
+          const x = i * cw + cw * 0.15, y = h * 0.04 + row * h * 0.09, mw = cw * 0.7, mh = h * 0.075;
+          const hot = row === 5 && i === Math.floor(cols / 2);
+          g.fillStyle = hot ? 'rgba(235,225,200,0.6)' : `rgba(${190 + R() * 40},${180 + R() * 30},${150 + R() * 20},${0.14 + R() * 0.14})`;
+          g.fillRect(x, y, mw, mh);
+          g.fillStyle = 'rgba(30,20,15,0.55)';
+          g.fillRect(x + mw * 0.28, y + mh * 0.35, mw * 0.1, mh * 0.08);
+          g.fillRect(x + mw * 0.62, y + mh * 0.35, mw * 0.1, mh * 0.08);
+          g.fillRect(x + mw * 0.4, y + mh * 0.7, mw * 0.2, mh * 0.05);
+        }
+      }
+      glow(g, w / 2, h * 0.62, h * 0.25, 'rgba(255,170,90,0.25)');
+    },
+    fire(g, w, h, R) {
+      vgrad(g, w, h, ['#1a0a05', '#3a1408', '#120805']);
+      const base = h * 0.52;
+      g.fillStyle = '#0a0503';
+      g.beginPath();
+      g.moveTo(w * 0.25, base);
+      g.lineTo(w * 0.25, base - h * 0.16);
+      g.lineTo(w * 0.5, base - h * 0.27);
+      g.lineTo(w * 0.75, base - h * 0.16);
+      g.lineTo(w * 0.75, base);
+      g.closePath();
+      g.fill();
+      flames(g, w * 0.5, base, w * 0.6, h * 0.36, R);
+      for (let i = 0; i < 7; i++) person(g, w * (0.1 + R() * 0.8), h * (0.66 + R() * 0.12), h * 0.12, '#050302', R() < 0.5);
+      g.fillStyle = 'rgba(60,40,30,0.4)';
+      for (let i = 0; i < 5; i++) {
+        g.beginPath();
+        g.ellipse(w * (0.35 + R() * 0.3), h * (0.05 + R() * 0.15), w * 0.25, h * 0.05, 0, 0, Math.PI * 2);
+        g.fill();
+      }
+    },
+    ditch(g, w, h, R) {
+      vgrad(g, w, h, ['#0b0f12', '#141a1c']);
+      g.fillStyle = '#0a0b0b';
+      g.fillRect(0, h * 0.08, w * 0.62, h * 0.48);
+      const dx = w * 0.18, dy = h * 0.24, dw = w * 0.16, dh = h * 0.32;
+      g.fillStyle = '#020202';
+      g.fillRect(dx, dy, dw, dh);
+      person(g, dx + dw * 0.5, dy + dh, dh * 0.62, '#111414', false);
+      glow(g, dx + dw * 0.62, dy + dh * 0.47, 22, 'rgba(255,120,40,0.8)');
+      g.fillStyle = '#ff8a3a';
+      g.fillRect(dx + dw * 0.62, dy + dh * 0.47, 3, 3);
+      g.fillStyle = '#0e1012';
+      g.fillRect(w * 0.7, h * 0.12, w * 0.3, h * 0.44);
+      g.fillStyle = 'rgba(150,170,170,0.25)';
+      g.fillRect(w * 0.78, h * 0.22, w * 0.1, h * 0.08);
+      vgrad(g, w, h, ['#151513', '#0b0b0a'], h * 0.56, h);
+      for (let i = 0; i < 30; i++) {
+        g.fillStyle = `rgba(160,180,190,${0.05 + R() * 0.1})`;
+        g.fillRect(R() * w, h * 0.58 + R() * h * 0.3, 20 + R() * 60, 1);
+      }
+    },
+    grave(g, w, h, R) {
+      vgrad(g, w, h, ['#0d1215', '#1c2428', '#2a3135'], 0, h * 0.5);
+      moon(g, w * 0.22, h * 0.1, Math.min(w, h) * 0.03);
+      ridge(g, w, h * 0.42, h * 0.08, '#141a1d', R);
+      g.fillStyle = '#0c0f10';
+      g.beginPath();
+      g.moveTo(0, h * 0.6);
+      g.quadraticCurveTo(w * 0.5, h * 0.36, w, h * 0.5);
+      g.lineTo(w, h);
+      g.lineTo(0, h);
+      g.closePath();
+      g.fill();
+      for (let i = 0; i < 14; i++) {
+        const x = R() * w, y = h * (0.5 + R() * 0.2), r = 12 + R() * 18;
+        g.fillStyle = '#16191a';
+        g.beginPath();
+        g.ellipse(x, y, r, r * 0.45, 0, Math.PI, 0);
+        g.fill();
+        g.fillStyle = '#2a2a26';
+        g.fillRect(x + r * 0.3, y - r * 1.4, 2, r * 1.2);
+        bell(g, x + r * 0.3 + 1, y - r * 0.7, 3);
+      }
+      g.fillStyle = '#090b0c';
+      g.fillRect(w * 0.7, h * 0.33, w * 0.08, h * 0.1);
+      g.fillRect(w * 0.82, h * 0.31, w * 0.09, h * 0.12);
+      for (let i = 0; i < 4; i++) {
+        const x = w * (0.72 + i * 0.05), y = h * (0.325 - (i % 2) * 0.02);
+        g.fillStyle = '#050505';
+        g.beginPath();
+        g.ellipse(x, y, 6, 4, 0, 0, Math.PI * 2);
+        g.fill();
+        g.fillRect(x + 3, y - 6, 3, 4);
+      }
+      fog(g, w, h * 0.55, h * 0.08, 0.25);
+    },
+    chase(g, w, h, R) {
+      vgrad(g, w, h, ['#090b0d', '#141719']);
+      for (let i = 0; i < 18; i++) tree(g, R() * w, h * (0.5 + R() * 0.15), h * (0.3 + R() * 0.25), '#060707');
+      for (let i = 0; i < 12; i++) {
+        const t = i / 11, x = w * (0.15 + t * 0.7), y = h * (0.72 - t * 0.3);
+        glow(g, x, y, 28, 'rgba(255,140,50,0.7)');
+        g.fillStyle = '#ffb860';
+        g.fillRect(x - 1.5, y - 3, 3, 5);
+        person(g, x + 10, y + h * 0.1, h * 0.09, '#040404', i % 2 === 0);
+      }
+      fog(g, w, h * 0.62, h * 0.1, 0.18);
+    },
+    hut(g, w, h, R) {
+      vgrad(g, w, h, ['#0b0f12', '#1a2125'], 0, h * 0.5);
+      ridge(g, w, h * 0.5, h * 0.08, '#0d1113', R);
+      for (let i = 0; i < 10; i++) tree(g, R() * w, h * 0.52, h * (0.2 + R() * 0.2), '#070909');
+      const hx = w * 0.32, hb = h * 0.52, hw = w * 0.36, hh = h * 0.16;
+      house(g, hx, hb, hw, hh, '#0f0d0b', 'rgba(255,180,90,0.85)');
+      g.fillStyle = '#050505';
+      g.beginPath();
+      g.ellipse(hx - 22, hb - 6, 16, 7, 0, 0, Math.PI * 2);
+      g.fill();
+      g.beginPath();
+      g.arc(hx - 34, hb - 11, 6, 0, Math.PI * 2);
+      g.fill();
+      vgrad(g, w, h, ['#0c0d0d', '#060606'], hb, h);
+    },
+    cliff(g, w, h, R) { cliffScene(g, w, h, R, false); },
+    cliffFire(g, w, h, R) { cliffScene(g, w, h, R, true); },
+    dawn(g, w, h, R) {
+      vgrad(g, w, h, ['#2c3a48', '#7d8f98', '#d7c2a0'], 0, h * 0.45);
+      glow(g, w * 0.7, h * 0.42, h * 0.3, 'rgba(255,220,170,0.5)');
+      ridge(g, w, h * 0.4, h * 0.06, '#47525a', R);
+      g.fillStyle = '#2b3530';
+      g.fillRect(0, h * 0.44, w, h);
+      for (let i = 0; i < 16; i++) {
+        g.strokeStyle = `rgba(${90 + i * 2},${110 + i * 2},90,0.55)`;
+        g.lineWidth = 3;
+        g.beginPath();
+        const y = h * 0.46 + i * h * 0.03;
+        g.moveTo(-10, y + 10);
+        g.quadraticCurveTo(w * 0.5, y - 14 + (i % 3) * 4, w + 10, y + 6);
+        g.stroke();
+      }
+      for (let i = 0; i < 8; i++) house(g, w * (0.55 + i * 0.05), h * 0.445, w * 0.04, h * 0.02, '#3a4245', null);
+      fog(g, w, h * 0.44, h * 0.04, 0.35);
+    },
+    town(g, w, h, R) {
+      vgrad(g, w, h, ['#3a4650', '#8a9196', '#b9ad98'], 0, h * 0.5);
+      ridge(g, w, h * 0.34, h * 0.08, '#4c565c', R);
+      for (let i = 0; i < 7; i++) house(g, i * w * 0.15 - 10, h * 0.5, w * 0.13, h * 0.12, '#262a2c', R() < 0.3 ? 'rgba(255,220,160,0.7)' : null);
+      g.fillStyle = '#1b1d1e';
+      g.fillRect(0, h * 0.5, w, h);
+      const bx = w * 0.3, by = h * 0.43, bw = w * 0.42, bh = h * 0.1;
+      g.fillStyle = '#5d6b62';
+      g.fillRect(bx, by, bw, bh);
+      g.fillStyle = '#c8d0c6';
+      for (let i = 0; i < 6; i++) g.fillRect(bx + 8 + i * (bw - 16) / 6, by + bh * 0.15, (bw - 16) / 6 - 4, bh * 0.35);
+      g.fillStyle = '#0d0f0f';
+      g.beginPath();
+      g.arc(bx + bw * 0.2, by + bh, bh * 0.22, 0, Math.PI * 2);
+      g.arc(bx + bw * 0.8, by + bh, bh * 0.22, 0, Math.PI * 2);
+      g.fill();
+      glow(g, bx + bw, by + bh * 0.7, 40, 'rgba(255,230,170,0.8)');
+      g.fillStyle = '#d9d2bf';
+      g.fillRect(w * 0.82, h * 0.33, 4, h * 0.17);
+      g.fillRect(w * 0.79, h * 0.33, w * 0.08, h * 0.035);
+    },
+  };
+  function cliffScene(g, w, h, R, burning) {
+    vgrad(g, w, h, ['#1e2a35', '#4b5a66', '#7d817d', '#2a3034', '#101315'], 0, h);
+    g.fillStyle = '#121618';
+    g.beginPath();
+    g.moveTo(w * 0.55, 0);
+    for (let y = 0; y <= h; y += 20) g.lineTo(w * (0.5 + R() * 0.06), y);
+    g.lineTo(w, h);
+    g.lineTo(w, 0);
+    g.closePath();
+    g.fill();
+    fog(g, w, h * 0.7, h * 0.18, 0.4);
+    const y0 = h * 0.36;
+    g.strokeStyle = '#3b2e22';
+    g.lineWidth = 5;
+    g.beginPath();
+    g.moveTo(-10, y0 + 30);
+    g.lineTo(w * 0.56, y0);
+    g.stroke();
+    g.lineWidth = 1.5;
+    g.strokeStyle = '#6b5a45';
+    g.beginPath();
+    g.moveTo(-10, y0 + 6);
+    g.quadraticCurveTo(w * 0.25, y0 + 2, w * 0.56, y0 - 24);
+    g.stroke();
+    for (let i = 0; i < 9; i++) {
+      const x = i * w * 0.065;
+      g.fillStyle = '#2a2018';
+      g.fillRect(x, y0 + 30 - (x / (w * 0.56)) * 30, 3, 22);
+    }
+    if (burning) flames(g, w * 0.12, y0 + 26, w * 0.24, h * 0.16, R);
+    else for (let i = 0; i < 6; i++) glow(g, w * (0.02 + i * 0.03), y0 + 20 - i * 2, 20, 'rgba(255,140,50,0.55)');
+  }
+
+  const TONE = { fire: 'rgba(255,120,40,0.35)', cliffFire: 'rgba(255,120,40,0.3)', alarm: 'rgba(180,40,30,0.3)', dawn: 'rgba(255,220,170,0.25)', town: 'rgba(255,220,170,0.25)', shrine: 'rgba(200,120,60,0.3)', masks: 'rgba(200,140,80,0.3)' };
+
+  function paint(cv, key) {
+    if (!cv) return;
+    const w = window.innerWidth, h = Math.max(window.innerHeight, 480);
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    cv.width = Math.round(w * dpr);
+    cv.height = Math.round(h * dpr);
+    const g = cv.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const R = rng(hash(key));
+    // 文字那一页会盖住屏幕下半截，所以场景只画在上面六成，下面渐暗收进纸里
+    const sh = Math.round(h * 0.6);
+    g.fillStyle = '#0b0a09';
+    g.fillRect(0, 0, w, h);
+    g.save();
+    g.beginPath();
+    g.rect(0, 0, w, sh);
+    g.clip();
+    (S[key] || S.village)(g, w, sh, R);
+    g.restore();
+    const fade = g.createLinearGradient(0, sh * 0.8, 0, sh);
+    fade.addColorStop(0, 'rgba(11,10,9,0)');
+    fade.addColorStop(1, 'rgba(11,10,9,1)');
+    g.fillStyle = fade;
+    g.fillRect(0, sh * 0.8, w, sh * 0.2);
+    // 褪色、偏色
+    g.globalCompositeOperation = 'saturation';
+    g.globalAlpha = 0.6;
+    g.fillStyle = 'hsl(0,0%,50%)';
+    g.fillRect(0, 0, w, h);
+    g.globalAlpha = 1;
+    g.globalCompositeOperation = 'soft-light';
+    g.fillStyle = TONE[key] || 'rgba(120,140,150,0.25)';
+    g.fillRect(0, 0, w, h);
+    // 颗粒
+    g.globalCompositeOperation = 'overlay';
+    g.fillStyle = g.createPattern(grain(), 'repeat');
+    g.fillRect(0, 0, w, h);
+    g.globalCompositeOperation = 'source-over';
+    // 划痕和灰点
+    for (let i = 0; i < 5; i++) {
+      g.fillStyle = `rgba(230,225,210,${0.04 + R() * 0.08})`;
+      g.fillRect(R() * w, 0, 1, h * (0.3 + R() * 0.7));
+    }
+    for (let i = 0; i < 40; i++) {
+      g.fillStyle = `rgba(230,225,210,${R() * 0.25})`;
+      g.fillRect(R() * w, R() * h, 1 + R() * 2, 1 + R() * 2);
+    }
+    // 暗角
+    const v = g.createRadialGradient(w / 2, h * 0.35, Math.min(w, h) * 0.2, w / 2, h * 0.45, Math.max(w, h) * 0.8);
+    v.addColorStop(0, 'rgba(0,0,0,0)');
+    v.addColorStop(1, 'rgba(0,0,0,0.85)');
+    g.fillStyle = v;
+    g.fillRect(0, 0, w, h);
+  }
+  return { paint };
+})();
+
+(() => {
+  const ST = globalThis.Story;
+  const KEY = { auto: 'wumian.auto.v1', album: 'wumian.album.v1', mute: 'wumian.mute.v1' };
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch { /* 存不了也照常玩 */ } },
+    del(k) { try { localStorage.removeItem(k); } catch { /* 同上 */ } },
+  };
+  const $ = (id) => document.getElementById(id);
+  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const paras = (t) => esc(t).split('\n\n').map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+  const NAMES = { dou: '豆子', ayun: '阿芸', qin: '秦姐', tang: '小棠', chunni: '春妮' };
+  const NOISE = ['村里还睡着', '有人醒了', '很多人醒了', '全村都醒了'];
+  let S = null;
+  let painted = '';
+  let drawerOpen = false;
+
+  // ---- 铃声：用 WebAudio 合成，不加载任何文件 ----
+  const Sound = (() => {
+    let ctx = null;
+    let muted = store.get(KEY.mute) === '1';
+    function ding(times = 1) {
+      if (muted) return;
+      try {
+        ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+        for (let n = 0; n < times; n++) {
+          const t0 = ctx.currentTime + n * 0.18;
+          [[1, 0.5], [2.76, 0.22], [5.4, 0.12], [8.9, 0.05]].forEach(([mul, gain]) => {
+            const o = ctx.createOscillator(), g = ctx.createGain();
+            o.type = 'sine';
+            o.frequency.value = 1180 * mul * (1 + n * 0.03);
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(gain * 0.35, t0 + 0.01);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.2 / Math.sqrt(mul));
+            o.connect(g).connect(ctx.destination);
+            o.start(t0);
+            o.stop(t0 + 2.4);
+          });
+        }
+      } catch { /* 浏览器不支持就不响 */ }
+    }
+    return {
+      ding,
+      get muted() { return muted; },
+      toggle() { muted = !muted; store.set(KEY.mute, muted ? '1' : '0'); if (!muted) ding(); },
+    };
+  })();
+
+  function album() { try { return JSON.parse(store.get(KEY.album) || '[]'); } catch { return []; } }
+  function addAlbum(id) { const a = album(); if (!a.includes(id)) { a.push(id); store.set(KEY.album, JSON.stringify(a)); } }
+  function albumHTML() {
+    const got = album();
+    return `<h3>结局图鉴 · ${got.length} / ${ST.ENDING_ORDER.length}</h3><div class="slots">${ST.ENDING_ORDER.map((id) => {
+      const e = ST.ENDINGS[id];
+      return `<span class="slot${got.includes(id) ? ' got' : ''}">结局${e.num}　${got.includes(id) ? esc(e.title) : '？？？'}</span>`;
+    }).join('')}</div>`;
+  }
+
+  function paintBg(key) {
+    if (key === painted) return;
+    painted = key;
+    const cv = $('bg');
+    cv.classList.add('fade');
+    requestAnimationFrame(() => {
+      Art.paint(cv, key);
+      requestAnimationFrame(() => cv.classList.remove('fade'));
+    });
+  }
+
+  function renderHud() {
+    const left = ST.BUS - S.t;
+    const late = left < 0;
+    const leftText = late ? '头班车已经开走了' : `离头班车还有 ${Math.floor(left / 60)} 小时 ${left % 60} 分`;
+    $('hud').innerHTML = `
+      <span class="clock mono${late ? ' late' : ''}">${ST.hhmm(S.t)}<small>${leftText}</small></span>
+      <span class="noise${S.alarm >= 3 ? ' hot' : ''}" title="${NOISE[S.alarm]}">${[0, 1, 2].map((i) => `<i class="${i < S.alarm ? 'on' : ''}"></i>`).join('')}<span>${NOISE[S.alarm]}</span></span>
+      <span class="tools">
+        <button class="tool" type="button" data-clues>线索 ${S.clues.length}</button>
+        <button class="tool" type="button" data-undo ${S.hist.length ? '' : 'disabled'}>退一步</button>
+        <button class="tool" type="button" data-mute>${Sound.muted ? '声音：关' : '声音：开'}</button>
+      </span>`;
+  }
+
+  function renderPage() {
+    const v = ST.view(S);
+    if (v.mode === 'ending') {
+      addAlbum(v.id);
+      $('cap').innerHTML = `结局 ${v.num} / ${ST.ENDING_ORDER.length}`;
+      $('page').innerHTML = `
+        <p class="end-num">结局 ${v.num} · ${esc(v.tag)}</p>
+        <h2 class="end-title">${esc(v.title)}</h2>
+        <div class="txt">${paras(v.text)}</div>
+        <div class="end-foot">
+          <div class="album">${albumHTML()}</div>
+          <div class="btns">
+            <button class="primary" type="button" data-new>再来一次</button>
+            <button class="ghost" type="button" data-undo>退一步，换个选择</button>
+          </div>
+          <p class="real">故事是虚构的，拐卖不是。现实中遇到或怀疑有人被拐卖，请拨打 110。</p>
+        </div>`;
+      return;
+    }
+    $('cap').innerHTML = `No.${esc(v.id)}<b>${esc(v.title)}</b>`;
+    const withYou = Object.keys(NAMES).filter((k) => S.w[k]).map((k) => `<span>${NAMES[k]}</span>`).join('');
+    const wrist = { on: '红绳还在', burned: '红绳烧掉了', cut: '红绳剪断了' }[S.string];
+    $('page').innerHTML = `
+      <div class="with">同行 ${withYou || '<span>只有你</span>'}<span class="wrist">${wrist}</span></div>
+      ${v.note ? `<div class="note">${paras(v.note)}</div>` : ''}
+      <div class="txt">${paras(v.text)}</div>
+      <div class="choices">${v.choices.map((c, i) => `<button class="choice" type="button" data-choose="${i}"><span class="k">${'ABCDEFG'[i]}</span><span>${esc(c)}</span></button>`).join('')}</div>`;
+  }
+
+  function renderDrawer() {
+    const d = $('drawer');
+    d.hidden = !drawerOpen || !S;
+    if (d.hidden) return;
+    d.innerHTML = `<div class="drawer-in">
+      <h2>线索本 <button class="tool" type="button" data-clues>收起</button></h2>
+      <p class="hint">一路上你记下的事。哪些重要、说明了什么，要你自己判断。</p>
+      <ol>${S.clues.map((c) => `<li>${esc(ST.CLUES[c])}</li>`).join('')}</ol>
+    </div>`;
+  }
+
+  function render() {
+    if (!S) {
+      $('start').hidden = false;
+      $('game').hidden = true;
+      $('drawer').hidden = true;
+      $('album').innerHTML = albumHTML();
+      document.querySelector('[data-resume]').hidden = true;
+      paintBg('room');
+      return;
+    }
+    $('start').hidden = true;
+    $('game').hidden = false;
+    paintBg(ST.bgOf(S));
+    renderHud();
+    renderPage();
+    renderDrawer();
+    store.set(KEY.auto, JSON.stringify(S));
+  }
+
+  function top() { window.scrollTo({ top: 0, behavior: 'auto' }); }
+
+  let armed = false;
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    const d = b.dataset;
+    if ('new' in d) {
+      if (S && !S.ending && !armed && b.closest('#start') === null) {
+        armed = true;
+        b.textContent = '再点一次，重新开始';
+        setTimeout(() => { armed = false; }, 3000);
+        return;
+      }
+      armed = false;
+      S = ST.newGame();
+      drawerOpen = false;
+      top();
+    } else if ('resume' in d) {
+      // 由 start() 设置 S，这里只渲染
+    } else if (!S) return;
+    else if ('choose' in d) {
+      ST.choose(S, Number(d.choose));
+      if (S.dinged) Sound.ding(S.alarm >= 3 ? 3 : 1);
+      top();
+    } else if ('undo' in d) { S = ST.undo(S); top(); }
+    else if ('clues' in d) drawerOpen = !drawerOpen;
+    else if ('mute' in d) Sound.toggle();
+    else return;
+    render();
+  });
+
+  let resizeTimer = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { const k = painted; painted = ''; paintBg(k || 'room'); }, 200);
+  });
+
+  function start(data) {
+    if (data && data.S) S = data.S;
+    else {
+      try { const x = JSON.parse(store.get(KEY.auto) || 'null'); S = x && x.v === 1 && x.node ? x : null; } catch { S = null; }
+    }
+    render();
+  }
+  window.claude?.hot?.snapshot?.(() => ({ S }));
+  if (window.claude?.hot?.ready) window.claude.hot.ready(start);
+  else start(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body>
+</html>

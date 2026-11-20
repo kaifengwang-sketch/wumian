@@ -1,0 +1,21 @@
+<body>
+<canvas id="bg" role="img" aria-label="这一节的场景照片"></canvas>
+<div class="app" id="app">
+  <section class="start" id="start" hidden>
+    <h1>无面</h1>
+    <p class="sub">你是被骗进山里的新娘。第六天夜里，一个小孩敲响了你的窗户。<br>天亮前走到石门镇，头班车六点十分。</p>
+    <p class="warn">含拐卖、邪神崇拜和惊吓情节。故事、人物和地名均为虚构。</p>
+    <div class="btns">
+      <button class="primary" type="button" data-new>开始</button>
+      <button class="ghost" type="button" data-resume hidden>接着上次</button>
+    </div>
+    <div class="album" id="album"></div>
+  </section>
+
+  <section id="game" hidden>
+    <header class="hud" id="hud"></header>
+    <div class="photo"><div class="cap" id="cap"></div></div>
+    <article class="page" id="page" aria-live="polite"></article>
+  </section>
+</div>
+<div class="drawer" id="drawer" hidden></div>
